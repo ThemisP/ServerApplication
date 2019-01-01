@@ -7,7 +7,7 @@ namespace ServerApplication {
         
         public TcpListener ServerSocket;
         public static Network instance = new Network();
-        public static Client[] Clients = new Client[100];
+        public static Client[] Clients = new Client[Settings.MAX_PLAYERS];
 
         public void ServerStart() {
             for(int i=0; i<100; i++) {
@@ -36,6 +36,10 @@ namespace ServerApplication {
                     return;
                 }
             }
+        }
+
+        public static void SendDataTo(int index, byte[] data) {
+            
         }
     }
 }

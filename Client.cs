@@ -10,8 +10,8 @@ namespace ServerApplication {
         private byte[] readbuff;
 
         public void Start() {
-            Socket.SendBufferSize = 4096;
-            Socket.ReceiveBufferSize = 4096;
+            Socket.SendBufferSize = Settings.SEND_BUFFER_SIZE;
+            Socket.ReceiveBufferSize = Settings.RECEIVE_BUFFER_SIZE;
 
             myStream = Socket.GetStream();
             Array.Resize(ref readbuff, Socket.ReceiveBufferSize);
