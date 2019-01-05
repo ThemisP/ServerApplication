@@ -23,14 +23,21 @@ namespace ServerApplication {
             packetnum = buffer.ReadInt();
             buffer = null;
             if (packetnum == 0) return;
-
-            if(Packets.TryGetValue(packetnum, out packet)) {
+           
+            if (Packets.TryGetValue(packetnum, out packet)) {
                 packet.Invoke(index, data);
+            } else {
+                Console.WriteLine("Packet number from client " + index + " does not exist");
             }
         }
 
-        void HandleLogin(int index, byte[] data) {
-
+        void HandleLogin(int index, byte[] data) {            
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            string username = buffer.ReadString();
+            buffer = null; 
+            Console.WriteLine("Login attempt from: " + username);
         }
     }
 }

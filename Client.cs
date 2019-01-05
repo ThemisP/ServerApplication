@@ -41,12 +41,14 @@ namespace ServerApplication {
                 Buffer.BlockCopy(readbuff, 0, newBytes, 0, readBytes);
 
                 //Handle data
+                ServerHandlePackets.instance.HandleData(this.Index, newBytes);
 
                 if(Socket == null) {
                     return;
                 }
                 myStream.BeginRead(readbuff, 0, Socket.ReceiveBufferSize, OnReceiveData, null);
             } catch (Exception ex) {
+                Console.WriteLine(ex.Message);
                 CloseConnection();
                 return;
             }
