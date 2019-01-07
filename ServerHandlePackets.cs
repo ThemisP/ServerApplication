@@ -9,7 +9,7 @@ namespace ServerApplication {
         public static ServerHandlePackets instance = new ServerHandlePackets();
         private delegate void Packet_(int index, byte[] data);
         private Dictionary<int, Packet_> Packets;
-        private Dictionary<int, Player> players;
+        private static Dictionary<int, Player> players;
 
         public void InitMessegaes() {
             Packets = new Dictionary<int, Packet_>();
@@ -59,6 +59,11 @@ namespace ServerApplication {
                 players[index].x = x;
                 players[index].y = y;
             }
+        }
+
+        public Dictionary<int, Player> getPlayers()
+        {
+            return players;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Net;
+using System.Collections.Generic;
 
 namespace ServerApplication {
     class Network {
@@ -40,8 +41,36 @@ namespace ServerApplication {
             }
         }
 
+        // Called periodically???
         public static void SendDataTo(int index, byte[] data) {
-            
+            Dictionary<int, Player> server = ServerHandlePackets.instance.getPlayers();
+            Clients[index].myStream.BeginWrite(data, 0, data.Length, new AsyncCallback(BroadCastResponse), Clients[index].myStream)
         }
+
+        public static void BroadCast()
+        {
+            Dictionary<int, Player> handler = ServerHandlePackets.instance.getPlayers();
+            for (int i = 0; i < 100; i++)
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    if (j == i) continue;
+                    float x;
+                    float y;
+                    ByteBuffer.ByteBuffer buff = new ByteBuffer.ByteBuffer();
+                    x = handler[j].x;
+                    y = handler[j].y;
+                    buff.WriteFloat(x);
+                    buff.WriteFloat(y);
+                    SendDataTo(i, buff.BuffToArray());
+                }
+            }
+        }
+
+        static void BroadCastResponse(IAsyncResult ar)
+        {
+
+        }
+
     }
 }
