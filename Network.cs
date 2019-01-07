@@ -44,7 +44,7 @@ namespace ServerApplication {
         // Called periodically???
         public static void SendDataTo(int index, byte[] data) {
             Dictionary<int, Player> server = ServerHandlePackets.instance.getPlayers();
-            Clients[index].myStream.BeginWrite(data, 0, data.Length, new AsyncCallback(BroadCastResponse), Clients[index].myStream)
+            Clients[index].myStream.BeginWrite(data, 0, data.Length, new AsyncCallback(BroadCastResponse), Clients[index].myStream);
         }
 
         public static void BroadCast()
