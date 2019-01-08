@@ -10,10 +10,13 @@ namespace ServerApplication {
         public static Network instance = new Network();
         public static Client[] Clients = new Client[Settings.MAX_PLAYERS];
 
+        public Rooms roomHandler;
+
         public void ServerStart() {
             for(int i=0; i<100; i++) {
                 Clients[i] = new Client();
             }
+            roomHandler = new Rooms();
 
             ServerSocket = new TcpListener(IPAddress.Any, 5500);
             ServerSocket.Start();
@@ -58,8 +61,8 @@ namespace ServerApplication {
                     float x;
                     float y;
                     ByteBuffer.ByteBuffer buff = new ByteBuffer.ByteBuffer();
-                    x = handler[j].x;
-                    y = handler[j].y;
+                    x = handler[j].GetPosX();
+                    y = handler[j].GetPosY();
                     buff.WriteFloat(x);
                     buff.WriteFloat(y);
                     SendDataTo(i, buff.BuffToArray());

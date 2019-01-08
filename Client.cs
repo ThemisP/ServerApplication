@@ -7,7 +7,9 @@ namespace ServerApplication {
         public string IP;
         public TcpClient Socket;
         public NetworkStream myStream;
+        public Player player;
         private byte[] readbuff;
+        
 
         public void Start() {
             Socket.SendBufferSize = Settings.SEND_BUFFER_SIZE;

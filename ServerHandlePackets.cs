@@ -14,7 +14,9 @@ namespace ServerApplication {
         public void InitMessegaes() {
             Packets = new Dictionary<int, Packet_>();
             Packets.Add(1, HandleLogin);
-            Packets.Add(2, HandlePosition);
+            Packets.Add(2, HandleCreateRoom);
+            Packets.Add(5, HandleGetPlayersInRoom);
+            Packets.Add(3, HandlePosition);
         }
 
         public void HandleData(int index, byte[] data) {
@@ -38,8 +40,50 @@ namespace ServerApplication {
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
             string username = buffer.ReadString();
-            buffer = null; 
+            buffer = null;
+            Player player = Network.Clients[index].player;
+            if(player == null) {
+                Network.Clients[index].player = new Player(username);
+            } else {
+                player.ChangeUsername(username);
+            }
             Console.WriteLine("Login attempt from: " + username);
+        }
+
+        void HandleGetPlayersInRoom(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            ByteBuffer.ByteBuffer lengthBuffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            int roomIndex = buffer.ReadInt();
+            int[] clientsInRoom = Network.instance.roomHandler.GetPlayersInRoom(roomIndex);
+            
+            buffer.Clear();
+            buffer.WriteInt(clientsInRoom.Length);
+            foreach (int clientIndex in clientsInRoom ){
+                string username = Network.Clients[clientIndex].player.GetUsername();
+                buffer.WriteString(username);
+            }
+            
+            lengthBuffer.WriteInt(buffer.Length());
+            
+
+            Network.Clients[index].myStream.Write(lengthBuffer.BuffToArray(), 0, lengthBuffer.Length());
+
+            Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
+        }
+
+        void HandleCreateRoom(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            int maxPlayers = buffer.ReadInt();
+            int roomIndex = Network.instance.roomHandler.CreateRoom(index, maxPlayers);
+            buffer.Clear();
+            buffer.WriteInt((roomIndex!=-1)? 1:0);
+            buffer.WriteInt(roomIndex);
+            Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
+
         }
 
         void HandlePosition(int index, byte[] data)
@@ -56,8 +100,7 @@ namespace ServerApplication {
             }
             else
             {
-                players[index].x = x;
-                players[index].y = y;
+                players[index].SetLocation(x, y);
             }
         }
 
