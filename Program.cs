@@ -21,6 +21,9 @@ namespace ServerApplication {
             while (consoleRunning) {
                 line = Console.ReadLine();
                 if (String.IsNullOrWhiteSpace(line)) {
+                    //consoleRunning = false;
+                    //return;
+                } else if(line == "exit"){
                     consoleRunning = false;
                     return;
                 } else {

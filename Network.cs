@@ -39,6 +39,9 @@ namespace ServerApplication {
                     Clients[i].Start();
                     Console.WriteLine("Incomming connection from " + Clients[i].IP + " || index: " + i);
                     //send welcome messages
+                    ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                    buffer.WriteString("Welcome to Server!");
+                    client.GetStream().BeginWrite(buffer.BuffToArray(), 0, buffer.Length(), null, null);
                     return;
                 }
             }
