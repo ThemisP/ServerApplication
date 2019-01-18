@@ -22,7 +22,7 @@ namespace ServerApplication {
             ServerSocket.Start();
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
 
-            ServerHandlePackets.instance.InitMessegaes();
+            ServerHandlePackets.instance.InitMessages();
             Console.WriteLine("Server has successfully started.");
         }
 
@@ -40,6 +40,7 @@ namespace ServerApplication {
                     Console.WriteLine("Incomming connection from " + Clients[i].IP + " || index: " + i);
                     //send welcome messages
                     ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                    buffer.WriteInt(1);
                     buffer.WriteString("Welcome to Server!");
                     client.GetStream().BeginWrite(buffer.BuffToArray(), 0, buffer.Length(), null, null);
                     return;

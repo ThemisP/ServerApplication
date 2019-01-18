@@ -11,12 +11,14 @@ namespace ServerApplication {
         private Dictionary<int, Packet_> Packets;
         private static Dictionary<int, Player> players;
 
-        public void InitMessegaes() {
+        public void InitMessages() {
             Packets = new Dictionary<int, Packet_>();
             Packets.Add(1, HandleLogin);
             Packets.Add(2, HandleCreateRoom);
-            Packets.Add(5, HandleGetPlayersInRoom);
             Packets.Add(3, HandlePosition);
+
+            Packets.Add(5, HandleGetPlayersInRoom);
+            Packets.Add(6, HandleJoinRoom);
         }
 
         public void HandleData(int index, byte[] data) {
@@ -59,18 +61,20 @@ namespace ServerApplication {
             int[] clientsInRoom = Network.instance.roomHandler.GetPlayersInRoom(roomIndex);
             
             buffer.Clear();
-            buffer.WriteInt(clientsInRoom.Length);
-            foreach (int clientIndex in clientsInRoom ){
-                string username = Network.Clients[clientIndex].player.GetUsername();
-                buffer.WriteString(username);
+            buffer.WriteInt(4);
+            int count = 0;
+            foreach (int clientIndex in clientsInRoom) {
+                if (clientIndex != -1) count++;
             }
-            
-            lengthBuffer.WriteInt(buffer.Length());
-            
-
-            Network.Clients[index].myStream.Write(lengthBuffer.BuffToArray(), 0, lengthBuffer.Length());
-
-            Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
+            buffer.WriteInt(count);
+            foreach (int clientIndex in clientsInRoom ){
+                if (clientIndex != -1) {
+                    string username = Network.Clients[clientIndex].player.GetUsername();
+                    Console.WriteLine(username);
+                    buffer.WriteString(username);
+                }
+            }
+            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         void HandleCreateRoom(int index, byte[] data) {
@@ -80,6 +84,7 @@ namespace ServerApplication {
             int maxPlayers = buffer.ReadInt();
             int roomIndex = Network.instance.roomHandler.CreateRoom(index, maxPlayers);
             buffer.Clear();
+            buffer.WriteInt(3);
             buffer.WriteInt((roomIndex!=-1)? 1:0);
             buffer.WriteInt(roomIndex);
             Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
@@ -104,6 +109,19 @@ namespace ServerApplication {
             }
         }
 
+        void HandleJoinRoom(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            int roomIndex = buffer.ReadInt();
+            bool joined = Network.instance.roomHandler.JoinRoom(index, roomIndex);
+            buffer.Clear();
+            buffer.WriteInt(5);
+            buffer.WriteInt((joined) ? 1 : 0);
+            buffer.WriteInt(roomIndex);
+            Console.WriteLine($"Player {index} is trying to join room {roomIndex}");
+            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+        }
         public Dictionary<int, Player> getPlayers()
         {
             return players;

@@ -34,11 +34,15 @@ namespace ServerApplication {
 
         //Given a room index, tries to join the specified room
         public bool JoinRoom(int clientIndex, int roomIndex) {
-            if (_rooms[roomIndex].addPlayer(clientIndex)) {
-                Console.WriteLine("Player " + Network.Clients[clientIndex].player.GetUsername() + " successfully joined room " + roomIndex);
-                return true;
+            if(_rooms[roomIndex] != null) {
+                if (_rooms[roomIndex].addPlayer(clientIndex)) {
+                    Console.WriteLine("Player " + Network.Clients[clientIndex].player.GetUsername() + " successfully joined room " + roomIndex);
+                    return true;
+                } else {
+                    Console.WriteLine("Player " + Network.Clients[clientIndex].player.GetUsername() + " was not able to join room");
+                    return false;
+                }
             } else {
-                Console.WriteLine("Player " + Network.Clients[clientIndex].player.GetUsername() + " was not able to join room");
                 return false;
             }
         }
@@ -96,7 +100,7 @@ namespace ServerApplication {
                 count++;
             }
 
-            if(count == maxPlayers) {
+            if(count+1 == maxPlayers) {
                 _state = RoomState.Full;
             }
             return true;
