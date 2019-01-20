@@ -23,9 +23,11 @@ namespace ServerApplication {
                 if (String.IsNullOrWhiteSpace(line)) {
                     //consoleRunning = false;
                     //return;
-                } else if(line == "exit"){
+                } else if (line.ToLower() == "exit") {
                     consoleRunning = false;
                     return;
+                } else if (line.ToLower() == "creategame") {
+                    Network.instance.gameHandler.CreateGame();
                 } else {
 
                 }

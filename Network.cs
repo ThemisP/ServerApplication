@@ -10,13 +10,15 @@ namespace ServerApplication {
         public static Network instance = new Network();
         public static Client[] Clients = new Client[Settings.MAX_PLAYERS];
 
-        public Rooms roomHandler;
+        public RoomHandler roomHandler;
+        public GameHandler gameHandler;
 
         public void ServerStart() {
             for(int i=0; i<100; i++) {
                 Clients[i] = new Client();
             }
-            roomHandler = new Rooms();
+            roomHandler = new RoomHandler();
+            gameHandler = new GameHandler();
 
             ServerSocket = new TcpListener(IPAddress.Any, 5500);
             ServerSocket.Start();

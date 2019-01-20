@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ServerApplication {
-    class Rooms {
+    class RoomHandler {
         private Room[] _rooms = new Room[100];
 
         //Tries to find a room with the specified index, if it doesn't exist then it creates it.
@@ -57,8 +57,8 @@ namespace ServerApplication {
         public int[] players;
         public int maxPlayers;
 
-        public RoomState _state;
-        public enum RoomState {
+        private RoomState _state;
+        private enum RoomState {
             Searching,
             Empty,
             Full
@@ -91,19 +91,24 @@ namespace ServerApplication {
         public bool addPlayer(int playerIndex) {
             if (_state == RoomState.Full) return false;
             int count = 0;
-            bool running = true;
-            while(running && count < maxPlayers) {
+            bool found = false;
+            while(!found && count < maxPlayers) {
                 if(players[count] == -1) {
                     players[count] = playerIndex;
-                    running = false;
+                    found = true;
                 }
                 count++;
             }
-
-            if(count+1 == maxPlayers) {
-                _state = RoomState.Full;
-            }
-            return true;
+            
+            if (found) {
+                if (count + 1 >= maxPlayers) {
+                    _state = RoomState.Full;
+                } else {
+                    _state = RoomState.Searching;
+                }
+                return true;
+            } else
+                return false;
         }
 
         public int[] GetPlayers() {
