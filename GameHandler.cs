@@ -50,11 +50,28 @@ namespace ServerApplication {
                 return false;
             }
         }
+
+        public bool JoinGame(int ClientOneIndex, int ClientTwoIndex, int GameIndex) {
+            if (_games[GameIndex] != null) {
+                if (_games[GameIndex].AddTeams(ClientOneIndex, ClientTwoIndex)) {
+                    Console.WriteLine("Player " + Network.Clients[ClientOneIndex].player.GetUsername() + " together with "
+                                        + Network.Clients[ClientTwoIndex].player.GetUsername() + " have joined game (index " + GameIndex + ")");
+                    return true;
+                } else {
+                    Console.WriteLine("Player " + Network.Clients[ClientOneIndex].player.GetUsername() + " together with "
+                                        + Network.Clients[ClientTwoIndex].player.GetUsername()+ " were unable to join game (index " + GameIndex + ")");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
     }
 
     class Game {
         public int GameIndex;
         public int[] connectedClients = new int[100];
+        public int NumberOfConnectedClients = 0;
 
         private GameState _state;
         private enum GameState {
@@ -93,7 +110,8 @@ namespace ServerApplication {
             }
 
             if (found) {
-                if (count + 1 == 100) {
+                NumberOfConnectedClients += 1;
+                if (NumberOfConnectedClients==100) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
@@ -104,7 +122,32 @@ namespace ServerApplication {
         }
 
         public bool AddTeams(int ClientOneIndex, int ClientTwoIndex) {
-            return false;
+            if (_state == GameState.Full) return false;
+            int count = 0;
+            int found = 0;
+            int indexOne = 0;
+            int indexTwo = 0;
+            while (found<2 && count < 100) {
+                if (connectedClients[count] == -1) {
+                    if (found == 0) indexOne = count;
+                    else indexTwo = count;
+                    found++;
+                }
+                count++;
+            }
+
+            if (found>1) {
+                connectedClients[indexOne] = ClientOneIndex;
+                connectedClients[indexTwo] = ClientTwoIndex;
+                NumberOfConnectedClients += 2;
+                if (NumberOfConnectedClients==100) {
+                    _state = GameState.Full;
+                } else {
+                    _state = GameState.Searching;
+                }
+                return true;
+            } else
+                return false;
         }
     }
 }

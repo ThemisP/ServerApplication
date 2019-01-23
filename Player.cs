@@ -15,6 +15,8 @@ namespace ServerApplication {
         private float rotZ;
 
         private int ClientTeammember;
+        private int roomNumber;
+        private int gameRoomNumber;
         
         public Player(string username) {
             this.username = username;
@@ -28,6 +30,13 @@ namespace ServerApplication {
         }
 
         #region "Setters"
+
+        public void SetRoomNumber(int roomNumber) {
+            this.roomNumber = roomNumber;
+        }
+        public void SetGameRoomNumber(int gameRoomNumber) {
+            this.gameRoomNumber = gameRoomNumber;
+        }
         public void ChangeUsername(string username) {
             this.username = username;
         }
@@ -49,6 +58,12 @@ namespace ServerApplication {
 
         #region "Getters"
 
+        public int GetRoomIndex() {
+            return this.roomNumber;
+        }
+        public int GetGameRoomIndex() {
+            return this.gameRoomNumber;
+        }
         public int GetTeammemberClient() {
             return this.ClientTeammember;
         }        

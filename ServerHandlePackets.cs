@@ -20,7 +20,8 @@ namespace ServerApplication {
             Packets.Add(5, HandleGetPlayersInRoom);
             Packets.Add(6, HandleJoinRoom);
             Packets.Add(7, HandleInstantiationOfPrefabs);
-            Packets.Add(8, HandleJoinGame);
+            Packets.Add(8, HandleJoinGameSolo);
+            Packets.Add(9, HandleJoinGameDuo);
         }
 
         public void HandleData(int index, byte[] data) {
@@ -84,11 +85,14 @@ namespace ServerApplication {
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
             int maxPlayers = buffer.ReadInt();
+           
             int roomIndex = Network.instance.roomHandler.CreateRoom(index, maxPlayers);
+            
             buffer.Clear();
             buffer.WriteInt(3);
             buffer.WriteInt((roomIndex!=-1)? 1:0);
             buffer.WriteInt(roomIndex);
+            if (roomIndex != -1) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
 
         }
@@ -125,6 +129,7 @@ namespace ServerApplication {
             buffer.WriteInt(5);
             buffer.WriteInt((joined) ? 1 : 0);
             buffer.WriteInt(roomIndex);
+            if (joined) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Console.WriteLine($"Player {index} is trying to join room {roomIndex}");
             Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
@@ -137,7 +142,7 @@ namespace ServerApplication {
             int roomIndex = buffer.ReadInt();
         }
 
-        void HandleJoinGame(int index, byte[] data) {
+        void HandleJoinGameSolo(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
@@ -151,6 +156,31 @@ namespace ServerApplication {
             buffer.WriteInt(GameIndex);
             Console.WriteLine($"Player {index} is trying to join Game {GameIndex}");
             Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+        }
+
+        void HandleJoinGameDuo(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            int GameIndex = buffer.ReadInt();
+
+            int roomIndex = Network.Clients[index].player.GetRoomIndex();
+            int[] playersInRoom = Network.instance.roomHandler.GetPlayersInRoom(roomIndex);
+            int playerTwoIndex = playersInRoom[0];
+            if (playerTwoIndex == index) playerTwoIndex = playersInRoom[1];
+            bool joined;
+
+            if (playerTwoIndex != -1)
+                joined = Network.instance.gameHandler.JoinGame(index, playerTwoIndex, GameIndex);
+            else joined = false;
+
+            buffer.Clear();
+            buffer.WriteInt(6);
+            buffer.WriteInt((joined) ? 1 : 0);
+            buffer.WriteInt(GameIndex);
+            Console.WriteLine($"Player {index} with {playerTwoIndex} are trying to join Game {GameIndex}");
+            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[playerTwoIndex].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         public Dictionary<int, Player> getPlayers()
