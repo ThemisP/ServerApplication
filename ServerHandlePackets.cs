@@ -3,25 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
 
 namespace ServerApplication {
     class ServerHandlePackets {
         public static ServerHandlePackets instance = new ServerHandlePackets();
         private delegate void Packet_(int index, byte[] data);
-        private Dictionary<int, Packet_> Packets;
+        private Dictionary<int, Packet_> PacketsTcp;
+        private Dictionary<int, Packet_> PacketsUdp;
         private static Dictionary<int, Player> players;
 
         public void InitMessages() {
-            Packets = new Dictionary<int, Packet_>();
-            Packets.Add(1, HandleLogin);
-            Packets.Add(2, HandleCreateRoom);
-            Packets.Add(3, HandlePosition);
+            PacketsTcp = new Dictionary<int, Packet_>();
+            PacketsTcp.Add(1, HandleLogin);
+            PacketsTcp.Add(2, HandleCreateRoom);
+            PacketsTcp.Add(3, HandlePosition);
 
-            Packets.Add(5, HandleGetPlayersInRoom);
-            Packets.Add(6, HandleJoinRoom);
-            Packets.Add(7, HandleInstantiationOfPrefabs);
-            Packets.Add(8, HandleJoinGameSolo);
-            Packets.Add(9, HandleJoinGameDuo);
+            PacketsTcp.Add(5, HandleGetPlayersInRoom);
+            PacketsTcp.Add(6, HandleJoinRoom);
+            PacketsTcp.Add(7, HandleInstantiationOfPrefabs);
+            PacketsTcp.Add(8, HandleJoinGameSolo);
+            PacketsTcp.Add(9, HandleJoinGameDuo);
+
+            PacketsUdp = new Dictionary<int, Packet_>();
+            PacketsUdp.Add(1, HandleInitial);
         }
 
         public void HandleData(int index, byte[] data) {
@@ -33,13 +39,45 @@ namespace ServerApplication {
             buffer = null;
             if (packetnum == 0) return;
            
-            if (Packets.TryGetValue(packetnum, out packet)) {
+            if (PacketsTcp.TryGetValue(packetnum, out packet)) {
                 packet.Invoke(index, data);
             } else {
                 Console.WriteLine("Packet number from client " + index + " does not exist");
             }
         }
 
+        public void HandleUdpData(int index, byte[] data) {
+            int packetnum;
+            Packet_ packet;
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            packetnum = buffer.ReadInt();
+            buffer = null;
+            if (packetnum == 0) return;
+
+            if (PacketsUdp.TryGetValue(packetnum, out packet)) {
+                packet.Invoke(index, data);
+            } else {
+                Console.WriteLine("Packet number from client " + index + " does not exist");
+            }
+        }
+
+        #region "Handle Udp packets"
+        void HandleInitial(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            float number = buffer.ReadFloat();
+            Console.WriteLine("packet " + packetnum + " message: " + number);
+            buffer.Clear();
+            buffer.WriteFloat(15.2f);
+            IPEndPoint ipend = Network.Clients[index].UdpIP;
+            Console.WriteLine("ip end point " + ipend);
+            Network.Clients[index].UdpClient.Send(buffer.BuffToArray(), buffer.Length());
+        }
+        #endregion
+
+        #region "Handle TCP packets"
         void HandleLogin(int index, byte[] data) {            
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
@@ -77,7 +115,7 @@ namespace ServerApplication {
                     buffer.WriteString(username);
                 }
             }
-            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         void HandleCreateRoom(int index, byte[] data) {
@@ -93,7 +131,7 @@ namespace ServerApplication {
             buffer.WriteInt((roomIndex!=-1)? 1:0);
             buffer.WriteInt(roomIndex);
             if (roomIndex != -1) Network.Clients[index].player.SetRoomNumber(roomIndex);
-            Network.Clients[index].myStream.Write(buffer.BuffToArray() ,0,buffer.Length());
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray() ,0,buffer.Length());
 
         }
 
@@ -131,7 +169,7 @@ namespace ServerApplication {
             buffer.WriteInt(roomIndex);
             if (joined) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Console.WriteLine($"Player {index} is trying to join room {roomIndex}");
-            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         //WIP ... a client instantiates an object and has to broadcast it to other clients so they know.
@@ -155,7 +193,7 @@ namespace ServerApplication {
             buffer.WriteInt((joined) ? 1 : 0);
             buffer.WriteInt(GameIndex);
             Console.WriteLine($"Player {index} is trying to join Game {GameIndex}");
-            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         void HandleJoinGameDuo(int index, byte[] data) {
@@ -179,10 +217,10 @@ namespace ServerApplication {
             buffer.WriteInt((joined) ? 1 : 0);
             buffer.WriteInt(GameIndex);
             Console.WriteLine($"Player {index} with {playerTwoIndex} are trying to join Game {GameIndex}");
-            Network.Clients[index].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-            Network.Clients[playerTwoIndex].myStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            Network.Clients[playerTwoIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
-
+        #endregion
         public Dictionary<int, Player> getPlayers()
         {
             return players;

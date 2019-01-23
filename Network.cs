@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServerApplication {
     class Network {
@@ -9,9 +10,10 @@ namespace ServerApplication {
         public TcpListener ServerSocket;
         public static Network instance = new Network();
         public static Client[] Clients = new Client[Settings.MAX_PLAYERS];
-
+        public UdpClient UdpClient;
         public RoomHandler roomHandler;
         public GameHandler gameHandler;
+
 
         public void ServerStart() {
             for(int i=0; i<100; i++) {
@@ -25,6 +27,9 @@ namespace ServerApplication {
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
 
             ServerHandlePackets.instance.InitMessages();
+
+            UdpClient = new UdpClient(5501);
+            UdpClient.BeginReceive(new AsyncCallback(OnReceiveUdpData), null);
             Console.WriteLine("Server has successfully started.");
         }
 
@@ -34,26 +39,51 @@ namespace ServerApplication {
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
 
             for(int i=0; i<100; i++) {
-                if(Clients[i].Socket == null) {
-                    Clients[i].Socket = client;
+                if(Clients[i].TcpClient == null) {
+                    Clients[i].TcpClient = client;
                     Clients[i].Index = i;
-                    Clients[i].IP = client.Client.RemoteEndPoint.ToString();
+                    Clients[i].IP = (IPEndPoint)client.Client.RemoteEndPoint;
                     Clients[i].Start();
-                    Console.WriteLine("Incomming connection from " + Clients[i].IP + " || index: " + i);
+                    Console.WriteLine("Incomming connection from " + Clients[i].IP.ToString() + " || index: " + i);
                     //send welcome messages
                     ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
                     buffer.WriteInt(1);
                     buffer.WriteString("Welcome to Server!");
+                    buffer.WriteInt(i);
                     client.GetStream().BeginWrite(buffer.BuffToArray(), 0, buffer.Length(), null, null);
                     return;
                 }
             }
         }
 
+        void OnReceiveUdpData(IAsyncResult result) {
+            try {
+                IPEndPoint IpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                byte[] readBytes = UdpClient.EndReceive(result, ref IpEndPoint);
+                if (UdpClient == null) {
+                    return;
+                }
+                
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(readBytes);
+                int index = buffer.ReadInt();
+                byte[] croppedData = readBytes.Skip(4).ToArray();
+                Clients[index].StartUdp(IpEndPoint);
+                ServerHandlePackets.instance.HandleUdpData(index, croppedData);
+                
+                //Handle data
+                //ServerHandlePackets.instance.HandleData(this.Index, readBytes);
+                UdpClient.BeginReceive(new AsyncCallback(OnReceiveUdpData), null);
+            } catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+                return;
+            }
+        }
+
         // Called periodically???
         public static void SendDataTo(int index, byte[] data) {
             Dictionary<int, Player> server = ServerHandlePackets.instance.getPlayers();
-            Clients[index].myStream.BeginWrite(data, 0, data.Length, new AsyncCallback(BroadCastResponse), Clients[index].myStream);
+            Clients[index].TcpStream.BeginWrite(data, 0, data.Length, new AsyncCallback(BroadCastResponse), Clients[index].TcpStream);
         }
 
         public static void BroadCast()

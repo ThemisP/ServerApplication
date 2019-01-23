@@ -1,40 +1,48 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Net;
 
 namespace ServerApplication {
     class Client {
         public int Index;
-        public string IP;
-        public TcpClient Socket;
-        public NetworkStream myStream;
+        public IPEndPoint IP;
+        public IPEndPoint UdpIP;
+        public TcpClient TcpClient;
+        public UdpClient UdpClient;
+        public NetworkStream TcpStream;
         public Player player;
         private byte[] readbuff;
         
 
         public void Start() {
-            Socket.SendBufferSize = Settings.SEND_BUFFER_SIZE;
-            Socket.ReceiveBufferSize = Settings.RECEIVE_BUFFER_SIZE;
-
-            myStream = Socket.GetStream();
-            Array.Resize(ref readbuff, Socket.ReceiveBufferSize);
-            myStream.BeginRead(readbuff, 0, Socket.ReceiveBufferSize, OnReceiveData, null);
+            TcpClient.SendBufferSize = Settings.SEND_BUFFER_SIZE;
+            TcpClient.ReceiveBufferSize = Settings.RECEIVE_BUFFER_SIZE;            
+            TcpStream = TcpClient.GetStream();
+            Array.Resize(ref readbuff, TcpClient.ReceiveBufferSize);
+            TcpStream.BeginRead(readbuff, 0, TcpClient.ReceiveBufferSize, OnReceiveTcpData, null);
         }
 
-        void CloseConnection() {
-            Socket.Close();
-            Socket = null;
-            Console.WriteLine("Player Disconnected :" + IP);
+        public void StartUdp(IPEndPoint ipend) {
+            UdpIP = ipend;
+            UdpClient = new UdpClient();
+            UdpClient.Connect(ipend);
         }
 
-        void OnReceiveData(IAsyncResult result) {
+        void CloseTcpConnection() {
+            TcpClient.Close();
+            TcpClient = null;
+            Console.WriteLine("Player Disconnected (tcp):" + IP.ToString());
+        }
+        
+        void OnReceiveTcpData(IAsyncResult result) {
             try {
-                int readBytes = myStream.EndRead(result);
-                if (Socket == null) {
+                int readBytes = TcpStream.EndRead(result);
+                if (TcpClient == null) {
                     return;
                 }
 
                 if (readBytes <= 0) {
-                    CloseConnection();
+                    CloseTcpConnection();
                     return;
                 }
 
@@ -45,13 +53,13 @@ namespace ServerApplication {
                 //Handle data
                 ServerHandlePackets.instance.HandleData(this.Index, newBytes);
 
-                if(Socket == null) {
+                if(TcpClient == null) {
                     return;
                 }
-                myStream.BeginRead(readbuff, 0, Socket.ReceiveBufferSize, OnReceiveData, null);
+                TcpStream.BeginRead(readbuff, 0, TcpClient.ReceiveBufferSize, OnReceiveTcpData, null);
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
-                CloseConnection();
+                CloseTcpConnection();
                 return;
             }
         }
