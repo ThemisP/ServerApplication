@@ -67,12 +67,11 @@ namespace ServerApplication {
                 ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
                 buffer.WriteBytes(readBytes);
                 int index = buffer.ReadInt();
-                byte[] croppedData = readBytes.Skip(4).ToArray();
-                Clients[index].StartUdp(IpEndPoint);
-                ServerHandlePackets.instance.HandleUdpData(index, croppedData);
-                
-                //Handle data
-                //ServerHandlePackets.instance.HandleData(this.Index, readBytes);
+                if (Network.Clients[index] != null) {
+                    byte[] croppedData = readBytes.Skip(4).ToArray();
+                    Clients[index].UdpIP = IpEndPoint;
+                    ServerHandlePackets.instance.HandleUdpData(index, croppedData);
+                }
                 UdpClient.BeginReceive(new AsyncCallback(OnReceiveUdpData), null);
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);

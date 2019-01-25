@@ -13,11 +13,12 @@ namespace ServerApplication {
         private float z;
         private bool isAlive;
 
-        private float rotZ;
+        private float rotY;
 
         private int ClientTeammember;
         private int roomNumber;
         private int gameRoomNumber;
+        private int teamNumber;
         
         public Player(string username) {
             this.username = username;
@@ -42,14 +43,18 @@ namespace ServerApplication {
             this.username = username;
         }
 
+        public void SetTeamNumber(int teamNumber) {
+            this.teamNumber = teamNumber;
+        }
+
         public void SetLocation(float x, float y, float z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
 
-        public void SetRotation(float rotZ) {
-            this.rotZ = rotZ;
+        public void SetRotation(float rotY) {
+            this.rotY = rotY;
         }
 
         public void SetTeammember(int ClientIndex) {
@@ -73,6 +78,9 @@ namespace ServerApplication {
         public int GetTeammemberClient() {
             return this.ClientTeammember;
         }        
+        public int GetTeamNumber() {
+            return this.teamNumber;
+        }
         public float GetPosX() {
             return this.x;
         }
@@ -82,8 +90,8 @@ namespace ServerApplication {
         public float GetPosZ() {
             return this.z;
         }
-        public float GetRotZ() {
-            return this.rotZ;
+        public float GetRotY() {
+            return this.rotY;
         }
         public string GetUsername() {
             return this.username;

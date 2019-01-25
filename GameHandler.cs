@@ -51,27 +51,38 @@ namespace ServerApplication {
             }
         }
 
-        public bool JoinGame(int ClientOneIndex, int ClientTwoIndex, int GameIndex) {
+        //Joining a game as a duo and getting the Team index as a return or -1 if error
+        public int JoinGame(int ClientOneIndex, int ClientTwoIndex, int GameIndex) {
             if (_games[GameIndex] != null) {
-                if (_games[GameIndex].AddTeams(ClientOneIndex, ClientTwoIndex)) {
+                int teamIndex = _games[GameIndex].AddDuo(ClientOneIndex, ClientTwoIndex);
+                if (teamIndex != -1) {
                     Console.WriteLine("Player " + Network.Clients[ClientOneIndex].player.GetUsername() + " together with "
                                         + Network.Clients[ClientTwoIndex].player.GetUsername() + " have joined game (index " + GameIndex + ")");
-                    return true;
+                    return teamIndex;
                 } else {
                     Console.WriteLine("Player " + Network.Clients[ClientOneIndex].player.GetUsername() + " together with "
                                         + Network.Clients[ClientTwoIndex].player.GetUsername()+ " were unable to join game (index " + GameIndex + ")");
-                    return false;
+                    return -1;
                 }
             } else {
-                return false;
+                return -1;
             }
+        }
+
+        public int[] GetPlayersInGame(int gameIndex, int clientIndex) {
+            if(_games[gameIndex] != null) {
+                return _games[gameIndex].GetConnectedPlayersBut(clientIndex);
+            }
+            return null;
         }
     }
 
     class Game {
-        public int GameIndex;
-        public int[] connectedClients = new int[100];
-        public int NumberOfConnectedClients = 0;
+        private int GameIndex;
+        private int[] connectedClients = new int[100];
+        private int NumberOfConnectedClients = 0;
+        private Team[] Teams = new Team[50];
+        
 
         private GameState _state;
         private enum GameState {
@@ -84,14 +95,21 @@ namespace ServerApplication {
             this.GameIndex = index;
             for(int i=0; i<100; i++) {
                 connectedClients[i] = -1;
+                if (i < 50) {
+                    Teams[i] = new Team(i, GameIndex);
+                }
             }
             _state = GameState.Empty;
+            
         }
 
         public Game(int index, int ClientIndex) {
             this.GameIndex = index;
             for (int i = 0; i < 100; i++) {
                 connectedClients[i] = -1;
+                if (i < 50) {
+                    Teams[i] = new Team(i, GameIndex);
+                }
             }
             _state = GameState.Empty;
             AddPlayer(ClientIndex);
@@ -121,8 +139,8 @@ namespace ServerApplication {
                 return false;            
         }
 
-        public bool AddTeams(int ClientOneIndex, int ClientTwoIndex) {
-            if (_state == GameState.Full) return false;
+        public int AddDuo(int ClientOneIndex, int ClientTwoIndex) {
+            if (_state == GameState.Full) return -1;
             int count = 0;
             int found = 0;
             int indexOne = 0;
@@ -139,15 +157,48 @@ namespace ServerApplication {
             if (found>1) {
                 connectedClients[indexOne] = ClientOneIndex;
                 connectedClients[indexTwo] = ClientTwoIndex;
+                int teamIndex = AddTeam(ClientOneIndex, ClientTwoIndex);
                 NumberOfConnectedClients += 2;
                 if (NumberOfConnectedClients==100) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
                 }
-                return true;
+                return teamIndex;
             } else
-                return false;
+                return -1;
         }
+
+        int AddTeam(int ClientOneIndex, int ClientTwoIndex) {
+            foreach (Team team in Teams) {
+                if (team.isEmpty()) {
+                    team.createTeam(ClientOneIndex,ClientTwoIndex);
+                    return team.getIndex();
+                }
+            }
+            return -1;
+        }
+
+        public int[] GetConnectedPlayers() {
+            List<int> players = new List<int>();
+            for(int i=0; i<100; i++) {
+                if(connectedClients[i] != -1) {
+                    players.Add(connectedClients[i]);
+                }
+            }
+            return players.ToArray();
+        }
+
+        public int[] GetConnectedPlayersBut(int index) {
+            List<int> players = new List<int>();
+            
+            for (int i = 0; i < 100; i++) {
+                if (connectedClients[i] != -1 && connectedClients[i] != index) {
+                    players.Add(connectedClients[i]);
+                }
+            }
+            return players.ToArray();
+        }
+
     }
 }

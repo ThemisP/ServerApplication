@@ -22,12 +22,6 @@ namespace ServerApplication {
             TcpStream.BeginRead(readbuff, 0, TcpClient.ReceiveBufferSize, OnReceiveTcpData, null);
         }
 
-        public void StartUdp(IPEndPoint ipend) {
-            UdpIP = ipend;
-            UdpClient = new UdpClient();
-            UdpClient.Connect(ipend);
-        }
-
         void CloseTcpConnection() {
             TcpClient.Close();
             TcpClient = null;

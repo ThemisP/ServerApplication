@@ -55,6 +55,7 @@
     <Compile Include="RoomHandler.cs" />
     <Compile Include="ServerHandlePackets.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Team.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
