@@ -11,6 +11,7 @@ namespace ServerApplication {
         private float x;
         private float y;
         private float z;
+        private bool isAlive;
 
         private float rotZ;
 
@@ -54,6 +55,11 @@ namespace ServerApplication {
         public void SetTeammember(int ClientIndex) {
             this.ClientTeammember = ClientIndex;
         }
+
+        public void SetIsAlive(bool isAlive)
+        {
+            this.isAlive = isAlive;
+        }
         #endregion
 
         #region "Getters"
@@ -81,6 +87,10 @@ namespace ServerApplication {
         }
         public string GetUsername() {
             return this.username;
+        }
+        public bool GetAliveStatus()
+        {
+            return this.isAlive;
         }
         #endregion
     }

@@ -26,6 +26,8 @@ namespace ServerApplication {
             PacketsTcp.Add(8, HandleJoinGameSolo);
             PacketsTcp.Add(9, HandleJoinGameDuo);
 
+            PacketsTcp.Add(-1, HandlePlayerDeath);
+
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
         }
@@ -219,6 +221,13 @@ namespace ServerApplication {
             Console.WriteLine($"Player {index} with {playerTwoIndex} are trying to join Game {GameIndex}");
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             Network.Clients[playerTwoIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+        }
+
+        void HandlePlayerDeath(int index, byte[] data)
+        {
+            Network.Clients[index].player.SetIsAlive(false);
+            players[index].SetIsAlive(false);
+            Console.WriteLine($"Player {index} has died.");
         }
         #endregion
         public Dictionary<int, Player> getPlayers()
