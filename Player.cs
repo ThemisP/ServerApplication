@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServerApplication {
     class Player {
+        private int ID; //(index inside game used for clients) W.I.P. used like an id
 
         private string username;
         private float x;
@@ -17,11 +18,12 @@ namespace ServerApplication {
 
         private int ClientTeammember;
         private int roomNumber;
-        private int gameRoomNumber;
+        private int gameRoomNumber;        
         private int teamNumber;
         
-        public Player(string username) {
+        public Player(string username, int id) {
             this.username = username;
+            this.ID = id;
         }
 
         public Player(float x, float y, float z)
@@ -69,6 +71,9 @@ namespace ServerApplication {
 
         #region "Getters"
 
+        public int GetId() {
+            return this.ID;
+        }
         public int GetRoomIndex() {
             return this.roomNumber;
         }

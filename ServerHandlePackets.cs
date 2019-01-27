@@ -84,16 +84,29 @@ namespace ServerApplication {
             float posY = buffer.ReadFloat();
             float posZ = buffer.ReadFloat();
             float rotY = buffer.ReadFloat();
-            Console.WriteLine("Player " + index + " send location at (" + posX + ", " + posY + ", " + posZ + ")");
-            Network.Clients[index].player.SetLocation(posX, posY, posZ);
-            Network.Clients[index].player.SetRotation(rotY);
 
-            //reply using this:  \/
-            //Console.WriteLine("packet " + packetnum + " message: " + posX);
-            //buffer.Clear();
-            //buffer.WriteFloat(15.2f);
-            //Console.WriteLine("ip from client saved: " + Network.Clients[index].UdpIP.ToString());
-            //Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
+            Player player = Network.Clients[index].player;
+            player.SetLocation(posX, posY, posZ);
+            player.SetRotation(rotY);
+            //Console.WriteLine("Player " + index + " send location at (" + player.GetPosX() + ", " + player.GetPosY() + ", " + player.GetPosZ() + ")");
+            
+            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
+            buffer.Clear();
+            int gameRoomIndex = player.GetGameRoomIndex();
+            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+            buffer.WriteInt(2);
+            buffer.WriteInt(playersInRoom.Length);
+            foreach (int clientIndex in playersInRoom) {
+                Player playerOther = Network.Clients[clientIndex].player;
+                buffer.WriteInt(playerOther.GetId());
+                buffer.WriteFloat(playerOther.GetPosX());
+                buffer.WriteFloat(playerOther.GetPosY());
+                buffer.WriteFloat(playerOther.GetPosZ());
+                buffer.WriteFloat(playerOther.GetRotY());
+                Console.WriteLine("Sending player " + playerOther.GetId() + " with location ("
+                    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
+            }
+            Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
         }
         #endregion
 
@@ -106,7 +119,7 @@ namespace ServerApplication {
             buffer = null;
             Player player = Network.Clients[index].player;
             if(player == null) {
-                Network.Clients[index].player = new Player(username);
+                Network.Clients[index].player = new Player(username, index);
             } else {
                 player.ChangeUsername(username);
             }
@@ -272,6 +285,7 @@ namespace ServerApplication {
             buffer.WriteInt(playersInRoom.Length);
             foreach(int clientIndex in playersInRoom) {
                 Player player = Network.Clients[clientIndex].player;
+                buffer.WriteInt(player.GetId());
                 buffer.WriteInt(player.GetTeamNumber());
                 buffer.WriteString(player.GetUsername());                
                 buffer.WriteFloat(player.GetPosX());
