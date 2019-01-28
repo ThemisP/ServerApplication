@@ -134,7 +134,9 @@ namespace ServerApplication {
             
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
 
+            
             Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
+            
             //EveryTime a player sends its location, the server responds by sending that player the locations of other players
             buffer.Clear();
             int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);

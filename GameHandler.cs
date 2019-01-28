@@ -71,6 +71,7 @@ namespace ServerApplication {
 
         public void AddBullet(int gameIndex, string bulletId, float x, float y, float z, float rotY, float speed, float lifetime) {
             if(_games[gameIndex] != null) {
+                Console.WriteLine("in1");
                 _games[gameIndex].AddBullet(bulletId, x, y, z, rotY, speed, lifetime);
             } else {
                 Console.WriteLine("Player trying to spawn a bullet in game index " + gameIndex + " but game does not exist");
@@ -109,7 +110,7 @@ namespace ServerApplication {
                 }
             }
             _state = GameState.Empty;
-            
+            Bullets = new Dictionary<string, Bullet>();
         }
 
         public Game(int index, int ClientIndex) {
@@ -122,6 +123,7 @@ namespace ServerApplication {
             }
             _state = GameState.Empty;
             AddPlayer(ClientIndex);
+            Bullets = new Dictionary<string, Bullet>();
         }
 
         public bool AddPlayer(int ClientIndex) {
@@ -190,6 +192,7 @@ namespace ServerApplication {
 
         public void AddBullet(string bulletId,float x, float y, float z, float rotY, float speed, float lifetime) {
             Bullets.Add(bulletId, new Bullet(x, y, z, rotY, speed, lifetime));
+            Console.WriteLine("in2");
         }
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
