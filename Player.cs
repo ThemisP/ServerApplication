@@ -9,11 +9,18 @@ namespace ServerApplication {
         private int ID; //(index inside game used for clients) W.I.P. used like an id
 
         private string username;
+        //Position (x,y,z)
         private float x;
         private float y;
         private float z;
+        //velocity (x,y,z)
+        private float xVel;
+        private float yVel;
+        private float zVel;
+
         private bool isAlive;
 
+        //rotation(0,rotY,0)
         private float rotY;
 
         private int ClientTeammember;
@@ -55,6 +62,12 @@ namespace ServerApplication {
             this.z = z;
         }
 
+        public void SetVelocity(float x, float y, float z) {
+            this.xVel = x;
+            this.yVel = y;
+            this.zVel = z;
+        }
+
         public void SetRotation(float rotY) {
             this.rotY = rotY;
         }
@@ -94,6 +107,15 @@ namespace ServerApplication {
         }
         public float GetPosZ() {
             return this.z;
+        }
+        public float GetVelX() {
+            return this.xVel;
+        }
+        public float GetVelY() {
+            return this.yVel;
+        }
+        public float GetVelZ() {
+            return this.zVel;
         }
         public float GetRotY() {
             return this.rotY;
