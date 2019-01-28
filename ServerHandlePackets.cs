@@ -83,10 +83,16 @@ namespace ServerApplication {
             float posX = buffer.ReadFloat();
             float posY = buffer.ReadFloat();
             float posZ = buffer.ReadFloat();
+
+            float velX = buffer.ReadFloat();
+            float velY = buffer.ReadFloat();
+            float velZ = buffer.ReadFloat();
+
             float rotY = buffer.ReadFloat();
 
             Player player = Network.Clients[index].player;
             player.SetLocation(posX, posY, posZ);
+            player.SetVelocity(velX, velY, velZ);
             player.SetRotation(rotY);
             //Console.WriteLine("Player " + index + " send location at (" + player.GetPosX() + ", " + player.GetPosY() + ", " + player.GetPosZ() + ")");
             
@@ -102,9 +108,12 @@ namespace ServerApplication {
                 buffer.WriteFloat(playerOther.GetPosX());
                 buffer.WriteFloat(playerOther.GetPosY());
                 buffer.WriteFloat(playerOther.GetPosZ());
+                buffer.WriteFloat(playerOther.GetVelX());
+                buffer.WriteFloat(playerOther.GetVelY());
+                buffer.WriteFloat(playerOther.GetVelZ());
                 buffer.WriteFloat(playerOther.GetRotY());
-                Console.WriteLine("Sending player " + playerOther.GetId() + " with location ("
-                    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
+                //Console.WriteLine("Sending player " + playerOther.GetId() + " with location ("
+                //    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
             }
             Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
         }
