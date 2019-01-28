@@ -69,6 +69,14 @@ namespace ServerApplication {
             }
         }
 
+        public void AddBullet(int gameIndex, string bulletId, float x, float y, float z, float rotY, float speed, float lifetime) {
+            if(_games[gameIndex] != null) {
+                _games[gameIndex].AddBullet(bulletId, x, y, z, rotY, speed, lifetime);
+            } else {
+                Console.WriteLine("Player trying to spawn a bullet in game index " + gameIndex + " but game does not exist");
+            }
+        }
+
         public int[] GetPlayersInGame(int gameIndex, int clientIndex) {
             if(_games[gameIndex] != null) {
                 return _games[gameIndex].GetConnectedPlayersBut(clientIndex);
@@ -82,6 +90,7 @@ namespace ServerApplication {
         private int[] connectedClients = new int[100];
         private int NumberOfConnectedClients = 0;
         private Team[] Teams = new Team[50];
+        private Dictionary<string, Bullet> Bullets;
         
 
         private GameState _state;
@@ -179,6 +188,9 @@ namespace ServerApplication {
             return -1;
         }
 
+        public void AddBullet(string bulletId,float x, float y, float z, float rotY, float speed, float lifetime) {
+            Bullets.Add(bulletId, new Bullet(x, y, z, rotY, speed, lifetime));
+        }
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
             for(int i=0; i<100; i++) {

@@ -32,6 +32,7 @@ namespace ServerApplication {
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
             PacketsUdp.Add(2, HandlePlayerLocation);
+            PacketsUdp.Add(3, HandleBulletSpawn);
         }
 
         public void HandleData(int index, byte[] data) {
@@ -116,6 +117,40 @@ namespace ServerApplication {
                 //    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
             }
             Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
+        }
+
+        void HandleBulletSpawn(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            string datetime = buffer.ReadString();
+            string bulletID = buffer.ReadString();
+            float posX = buffer.ReadFloat();
+            float posY = buffer.ReadFloat();
+            float posZ = buffer.ReadFloat();
+            float rotY = buffer.ReadFloat();
+            float speed = buffer.ReadFloat();
+            float lifetime = buffer.ReadFloat();
+            
+            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+
+            Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
+            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
+            buffer.Clear();
+            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+            foreach (int clientIndex in playersInRoom) {
+                buffer.WriteInt(3);// 3 is for client to handle bullet spawn;
+                buffer.WriteString(bulletID);
+                buffer.WriteFloat(posX);
+                buffer.WriteFloat(posY);
+                buffer.WriteFloat(posZ);
+                buffer.WriteFloat(rotY);
+                buffer.WriteFloat(speed);
+                buffer.WriteFloat(lifetime);
+                //Console.WriteLine("Sending player " + playerOther.GetId() + " with location ("
+                //    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
+                Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[clientIndex].UdpIP);
+            }
         }
         #endregion
 
