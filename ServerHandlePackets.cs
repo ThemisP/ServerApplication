@@ -26,6 +26,7 @@ namespace ServerApplication {
             PacketsTcp.Add(8, HandleJoinGameSolo);
             PacketsTcp.Add(9, HandleJoinGameDuo);
             PacketsTcp.Add(10, HandleGetPlayersInGame);
+            PacketsTcp.Add(11, HandleDestroyBullet);
 
             PacketsTcp.Add(-1, HandlePlayerDeath);
 
@@ -297,6 +298,7 @@ namespace ServerApplication {
             if (teamIndex != -1) {
                 buffer.WriteInt(GameIndex);
                 buffer.WriteInt(teamIndex);
+                buffer.WriteInt(1);//Player number in team
                 buffer.WriteInt(playerTwoIndex);
                 if(playerTwoIndex!=-1)
                     buffer.WriteString(Network.Clients[playerTwoIndex].player.GetUsername());
@@ -311,6 +313,7 @@ namespace ServerApplication {
                 buffer2.WriteInt((teamIndex != -1) ? 1 : 0);
                 buffer2.WriteInt(GameIndex);
                 buffer2.WriteInt(teamIndex);
+                buffer2.WriteInt(2);//Player number in team
                 buffer2.WriteInt(index);
                 buffer2.WriteString(Network.Clients[index].player.GetUsername());
                 
@@ -341,6 +344,24 @@ namespace ServerApplication {
             }
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             
+        }
+
+        void HandleDestroyBullet(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            string bullet_id = buffer.ReadString();
+            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+            Network.instance.gameHandler.RemoveBullet(gameRoomIndex, bullet_id);
+            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+            
+            foreach (int clientIndex in playersInRoom) {
+                buffer.Clear();
+                buffer.WriteInt(8);
+                buffer.WriteString(bullet_id);
+                
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            }
         }
 
         void HandlePlayerDeath(int index, byte[] data)

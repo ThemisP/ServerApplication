@@ -71,10 +71,17 @@ namespace ServerApplication {
 
         public void AddBullet(int gameIndex, string bulletId, float x, float y, float z, float rotY, float speed, float lifetime) {
             if(_games[gameIndex] != null) {
-                Console.WriteLine("in1");
                 _games[gameIndex].AddBullet(bulletId, x, y, z, rotY, speed, lifetime);
             } else {
                 Console.WriteLine("Player trying to spawn a bullet in game index " + gameIndex + " but game does not exist");
+            }
+        }
+
+        public void RemoveBullet(int gameIndex, string bulletid) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].RemoveBullet(bulletid);
+            } else {
+                Console.WriteLine("Player trying to destroy a bullet in game index " + gameIndex + " but game does not exist");
             }
         }
 
@@ -192,7 +199,13 @@ namespace ServerApplication {
 
         public void AddBullet(string bulletId,float x, float y, float z, float rotY, float speed, float lifetime) {
             Bullets.Add(bulletId, new Bullet(x, y, z, rotY, speed, lifetime));
-            Console.WriteLine("in2");
+        }
+
+        public void RemoveBullet(string bulletId) {
+            Bullet bullet;
+            if(Bullets.TryGetValue(bulletId, out bullet)){
+                Bullets.Remove(bulletId);
+            }
         }
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
