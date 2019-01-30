@@ -373,7 +373,7 @@ namespace ServerApplication {
             int damageTaken = buffer.ReadFloat();   
             Network.instance.gameHandler.RemoveBullet(bullet_id);
             // Need to correctly attribute damage to player fired bullet
-            string[] bulletIdentifiers = bullet_id.Split("_");
+            string[] bulletIdentifiers = bullet_id.Split(',');
             int indexOfShooter = int.Parse(bulletIdentifiers[0]);
             Network.Clients[indexOfShooter].player.UpdateDamageDealt(damageTaken);
             // Update players dealt damage count
@@ -385,9 +385,11 @@ namespace ServerApplication {
 
         void HandlePlayerDeath(int index, byte[] data)
         {
-            Network.Clients[index].player.SetIsAlive(false);
-            players[index].SetIsAlive(false);
-            Console.WriteLine($"Player {index} has died.");
+           ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+           buffer.WriteBytes(data);
+           int packetnum = buffer.ReadInt();
+           string[] bulletIdentifiers = buffer.ReadString().Split('_');
+
         }
         #endregion
         public Dictionary<int, Player> getPlayers()
