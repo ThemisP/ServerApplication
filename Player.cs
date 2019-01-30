@@ -27,7 +27,8 @@ namespace ServerApplication {
         private int roomNumber;
         private int gameRoomNumber;        
         private int teamNumber;
-        
+        private float damageDealt = 0;
+        private int kills = 0;
         public Player(string username, int id) {
             this.username = username;
             this.ID = id;
@@ -126,6 +127,16 @@ namespace ServerApplication {
         public bool GetAliveStatus()
         {
             return this.isAlive;
+        }
+        #endregion
+
+        #region Update
+        public void UpdateDamageDealt(float d) {
+            this.damageDealt += d;
+        }
+
+        public void AddKill() {
+            this.kills +=1;
         }
         #endregion
     }

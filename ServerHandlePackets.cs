@@ -27,6 +27,7 @@ namespace ServerApplication {
             PacketsTcp.Add(9, HandleJoinGameDuo);
             PacketsTcp.Add(10, HandleGetPlayersInGame);
             PacketsTcp.Add(11, HandleDestroyBullet);
+            PacketsTcp.Add(12, HandlePlayerDamageTaken);
 
             PacketsTcp.Add(-1, HandlePlayerDeath);
 
@@ -362,6 +363,19 @@ namespace ServerApplication {
                 
                 Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             }
+        }
+
+        void HandlePlayerDamageTaken(int index, byte[] data){
+            ByteBuffer.ByteBuffer buffer  = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            string bullet_id = buffer.ReadString();
+            int damageTaken = buffer.ReadFloat();   
+            Network.instance.gameHandler.RemoveBullet(bullet_id);
+            // Need to correctly attribute damage to player fired bullet
+            string[] bulletIdentifiers = bullet_id.Split("_").Select<string, int>(x => int.Parse(x));
+            Network.Clients[bulletIdentifiers[0]].player.UpdateDamageDealt(damageTaken);
+            
         }
 
         void HandlePlayerDeath(int index, byte[] data)
