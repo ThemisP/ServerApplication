@@ -50,6 +50,10 @@ namespace ServerApplication {
         public int[] GetPlayersInRoom(int roomIndex) {
             return _rooms[roomIndex].GetPlayers();
         }
+        
+        public Room[] GetRooms() {
+            return this._rooms;
+        }
     }
 
     class Room {
