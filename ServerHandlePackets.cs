@@ -369,25 +369,28 @@ namespace ServerApplication {
             ByteBuffer.ByteBuffer buffer  = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
-            //string bullet_id = buffer.ReadString();
-            //int damageTaken = buffer.ReadFloat();
-            //Network.instance.gameHandler.RemoveBullet(bullet_id);
-            //// Need to correctly attribute damage to player fired bullet
-            //string[] bulletIdentifiers = bullet_id.Split("_");
-            //int indexOfShooter = int.Parse(bulletIdentifiers[0]);
-            //Network.Clients[indexOfShooter].player.UpdateDamageDealt(damageTaken);
-            //// Update players dealt damage count
-            //buffer.Clear();
-            //buffer.WriteInt(12);
-            //buffer.WriteFloat(damageTaken);
-            //Network.Clients[indexOfShooter].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            string bullet_id = buffer.ReadString();
+            int damageTaken = buffer.ReadFloat();
+            Network.instance.gameHandler.RemoveBullet(bullet_id);
+            // Need to correctly attribute damage to player fired bullet
+            string[] bulletIdentifiers = bullet_id.Split(',');
+            int indexOfShooter = int.Parse(bulletIdentifiers[0]);
+            Network.Clients[indexOfShooter].player.UpdateDamageDealt(damageTaken);
+            // Update players dealt damage count
+            buffer.Clear();
+            buffer.WriteInt(12);
+            buffer.WriteFloat(damageTaken);
+            Network.Clients[indexOfShooter].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         void HandlePlayerDeath(int index, byte[] data)
         {
-            Network.Clients[index].player.SetIsAlive(false);
-            players[index].SetIsAlive(false);
-            Console.WriteLine($"Player {index} has died.");
+           ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+           buffer.WriteBytes(data);
+           int packetnum = buffer.ReadInt();
+           string[] bulletIdentifiers = buffer.ReadString().Split('_');
+           int indexOfShooter = int.Parser(bulletIdentifiers[0]);
+           Network.Clients[indexOfShooter].player.AddKill();
         }
         #endregion
         public Dictionary<int, Player> getPlayers()
