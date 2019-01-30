@@ -341,8 +341,8 @@ namespace ServerApplication {
             buffer.WriteFloat(playerTwo.GetPosZ());
             buffer.WriteFloat(playerTwo.GetRotY());
             foreach (int clientIndex in playersInGame) {
-                if(clientIndex!=playerTwoIndex && clientIndex != index) 
-                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                Console.WriteLine(clientIndex);
             }
         }
 
