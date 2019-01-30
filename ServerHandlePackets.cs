@@ -318,7 +318,7 @@ namespace ServerApplication {
                 Network.Clients[playerTwoIndex].TcpStream.Write(buffer2.BuffToArray(), 0, buffer2.Length());
             }
 
-            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(roomIndex, clientIndex);
+            int[] playersInGame = Network.instance.gameHandler.GetPlayersInGame(roomIndex, index);
             Player playerOne = Network.Clients[index].player;
             Player playerTwo = Network.Clients[playerTwoIndex].player;
             buffer.Clear();
@@ -340,8 +340,9 @@ namespace ServerApplication {
             buffer.WriteFloat(playerTwo.GetPosY());
             buffer.WriteFloat(playerTwo.GetPosZ());
             buffer.WriteFloat(playerTwo.GetRotY());
-            foreach (int clientIndex in playersInRoom) {
-                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            foreach (int clientIndex in playersInGame) {
+                if(clientIndex!=playerTwoIndex && clientIndex != index) 
+                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             }
         }
 
