@@ -370,11 +370,11 @@ namespace ServerApplication {
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
             string bullet_id = buffer.ReadString();
-            int damageTaken = buffer.ReadFloat();   
-            Network.instance.gameHandler.RemoveBullet(bullet_id);
-            // Need to correctly attribute damage to player fired bullet
-            string[] bulletIdentifiers = bullet_id.Split("_").Select<string, int>(x => int.Parse(x));
-            Network.Clients[bulletIdentifiers[0]].player.UpdateDamageDealt(damageTaken);
+            float damageTaken = buffer.ReadFloat();   
+            //Network.instance.gameHandler.RemoveBullet(bullet_id);
+            //// Need to correctly attribute damage to player fired bullet
+            //int[] bulletIdentifiers = bullet_id.Split('_').Select<string, int>(x => int.Parse(x));
+            //Network.Clients[bulletIdentifiers[0]].player.UpdateDamageDealt(damageTaken);
             
         }
 
