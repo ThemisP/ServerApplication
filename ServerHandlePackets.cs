@@ -389,7 +389,8 @@ namespace ServerApplication {
            buffer.WriteBytes(data);
            int packetnum = buffer.ReadInt();
            string[] bulletIdentifiers = buffer.ReadString().Split('_');
-
+           int indexOfShooter = int.Parser(bulletIdentifiers[0]);
+           Network.Clients[indexOfShooter].player.AddKill();
         }
         #endregion
         public Dictionary<int, Player> getPlayers()
