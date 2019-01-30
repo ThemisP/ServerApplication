@@ -213,7 +213,6 @@ namespace ServerApplication {
             buffer.WriteInt(roomIndex);
             if (roomIndex != -1) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray() ,0,buffer.Length());
-
         }
 
         void HandlePosition(int index, byte[] data)
@@ -365,6 +364,7 @@ namespace ServerApplication {
             }
         }
 
+        // PacketNum = 12
         void HandlePlayerDamageTaken(int index, byte[] data){
             ByteBuffer.ByteBuffer buffer  = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
@@ -373,9 +373,14 @@ namespace ServerApplication {
             int damageTaken = buffer.ReadFloat();   
             Network.instance.gameHandler.RemoveBullet(bullet_id);
             // Need to correctly attribute damage to player fired bullet
-            string[] bulletIdentifiers = bullet_id.Split("_").Select<string, int>(x => int.Parse(x));
-            Network.Clients[bulletIdentifiers[0]].player.UpdateDamageDealt(damageTaken);
-            
+            string[] bulletIdentifiers = bullet_id.Split("_");
+            int indexOfShooter = int.Parse(bulletIdentifiers[0]);
+            Network.Clients[indexOfShooter].player.UpdateDamageDealt(damageTaken);
+            // Update players dealt damage count
+            buffer.Clear();
+            buffer.WriteInt(12);
+            buffer.WriteFloat(damageTaken);
+            Network.Clients[indexOfShooter].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         void HandlePlayerDeath(int index, byte[] data)
