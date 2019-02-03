@@ -190,7 +190,7 @@ namespace ServerApplication {
             foreach (int clientIndex in clientsInRoom ){
                 if (clientIndex != -1) {
                     string username = Network.Clients[clientIndex].player.GetUsername();
-                    Console.WriteLine(username);
+                    //Console.WriteLine(username);
                     buffer.WriteString(username);
                 }
             }
