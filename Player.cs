@@ -9,6 +9,7 @@ namespace ServerApplication {
         private int ID; //(index inside game used for clients) W.I.P. used like an id
 
         private string username;
+        private float health;
         //Position (x,y,z)
         private float x;
         private float y;
@@ -29,17 +30,47 @@ namespace ServerApplication {
         private int teamNumber;
         private float damageDealt = 0;
         private int kills = 0;
+        private bool inGame = false;
+        private bool inLobby = false;
         public Player(string username, int id) {
             this.username = username;
             this.ID = id;
         }
 
-        public Player(float x, float y, float z)
-        {
+        public Player(float x, float y, float z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+
+        public void JoinGame(int gameRoomNumber, int teammate, int teamnumber) {
+            this.inGame = true;
+            this.gameRoomNumber = gameRoomNumber;
+            kills = 0;
+            damageDealt = 0;
+            this.ClientTeammember = teammate;
+            this.teamNumber = teamnumber;
+            this.isAlive = true;
+            health = 100f;
+        }
+
+        public void LeaveGame() {
+            this.inGame = false;
+        }
+
+        #region "Extra"
+        public void TakeDamage(float amount) {
+            this.health -= amount;
+            if (this.health <= 0f)
+                this.isAlive = false;
+        }
+        public bool IsInGame() {
+            return this.inGame;
+        }
+        public bool IsAlive() {
+            return this.isAlive;
+        }
+        #endregion
 
         #region "Setters"
 
@@ -84,7 +115,6 @@ namespace ServerApplication {
         #endregion
 
         #region "Getters"
-
         public int GetId() {
             return this.ID;
         }
