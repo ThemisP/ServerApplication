@@ -61,8 +61,10 @@ namespace ServerApplication {
         #region "Extra"
         public void TakeDamage(float amount) {
             this.health -= amount;
-            if (this.health <= 0f)
+            if (this.health <= 0f) {
                 this.isAlive = false;
+                this.health = 0f;
+            }
         }
         public bool IsInGame() {
             return this.inGame;
@@ -154,9 +156,8 @@ namespace ServerApplication {
         public string GetUsername() {
             return this.username;
         }
-        public bool GetAliveStatus()
-        {
-            return this.isAlive;
+        public float GetHealth() {
+            return this.health;
         }
         #endregion
 

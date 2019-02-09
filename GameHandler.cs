@@ -85,8 +85,15 @@ namespace ServerApplication {
             }
         }
 
-        public int[] GetPlayersInGame(int gameIndex, int clientIndex) {
+        public int[] GetAlivePlayersInGame(int gameIndex, int clientIndex) {
             if(_games[gameIndex] != null) {
+                return _games[gameIndex].GetAlivePlayersBut(clientIndex);
+            }
+            return null;
+        }
+
+        public int[] GetPlayersInGame(int gameIndex, int clientIndex) {
+            if (_games[gameIndex] != null) {
                 return _games[gameIndex].GetConnectedPlayersBut(clientIndex);
             }
             return null;
@@ -217,9 +224,21 @@ namespace ServerApplication {
             return players.ToArray();
         }
 
-        public int[] GetConnectedPlayersBut(int index) {
+        public int[] GetAlivePlayersBut(int index) {
             List<int> players = new List<int>();
             
+            for (int i = 0; i < 100; i++) {
+                if (connectedClients[i] != -1 && connectedClients[i] != index) {
+                    if(Network.Clients[connectedClients[i]].player.IsAlive())
+                        players.Add(connectedClients[i]);
+                }
+            }
+            return players.ToArray();
+        }
+
+        public int[] GetConnectedPlayersBut(int index) {
+            List<int> players = new List<int>();
+
             for (int i = 0; i < 100; i++) {
                 if (connectedClients[i] != -1 && connectedClients[i] != index) {
                     players.Add(connectedClients[i]);
