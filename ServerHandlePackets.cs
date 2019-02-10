@@ -24,7 +24,6 @@ namespace ServerApplication {
             PacketsTcp.Add(8, HandleJoinGameSolo);
             PacketsTcp.Add(9, HandleJoinGameDuo);
             PacketsTcp.Add(10, HandleGetPlayersInGame);
-            PacketsTcp.Add(11, HandleDestroyBullet);
             PacketsTcp.Add(12, HandlePlayerDamageTaken);
 
             PacketsUdp = new Dictionary<int, Packet_>();
@@ -131,13 +130,10 @@ namespace ServerApplication {
 
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
 
-
-            Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
-
-            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
-            buffer.Clear();
             int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
             foreach (int clientIndex in playersInRoom) {
+                if (clientIndex == index) continue;
+                buffer.Clear();
                 buffer.WriteInt(3);// 3 is for client to handle bullet spawn;
                 buffer.WriteString(bulletID);
                 buffer.WriteFloat(posX);
@@ -349,24 +345,6 @@ namespace ServerApplication {
             }
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
-        //Packetnum = 11
-        void HandleDestroyBullet(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
-            string bullet_id = buffer.ReadString();
-            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            Network.instance.gameHandler.RemoveBullet(gameRoomIndex, bullet_id);
-            int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
-
-            foreach (int clientIndex in playersInRoom) {
-                buffer.Clear();
-                buffer.WriteInt(8);
-                buffer.WriteString(bullet_id);
-
-                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-            }
-        }
 
         // PacketNum = 12
         void HandlePlayerDamageTaken(int index, byte[] data){
@@ -385,7 +363,6 @@ namespace ServerApplication {
             }
 
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
             int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
 
             foreach (int clientIndex in playersInRoom) {

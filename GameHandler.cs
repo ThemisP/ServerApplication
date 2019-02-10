@@ -69,22 +69,6 @@ namespace ServerApplication {
             }
         }
 
-        public void AddBullet(int gameIndex, string bulletId, float x, float y, float z, float rotY, float speed, float lifetime) {
-            if(_games[gameIndex] != null) {
-                _games[gameIndex].AddBullet(bulletId, x, y, z, rotY, speed, lifetime);
-            } else {
-                Console.WriteLine("Player trying to spawn a bullet in game index " + gameIndex + " but game does not exist");
-            }
-        }
-
-        public void RemoveBullet(int gameIndex, string bulletid) {
-            if (_games[gameIndex] != null) {
-                _games[gameIndex].RemoveBullet(bulletid);
-            } else {
-                Console.WriteLine("Player trying to destroy a bullet in game index " + gameIndex + " but game does not exist");
-            }
-        }
-
         public int[] GetAlivePlayersInGame(int gameIndex, int clientIndex) {
             if(_games[gameIndex] != null) {
                 return _games[gameIndex].GetAlivePlayersBut(clientIndex);
@@ -105,7 +89,6 @@ namespace ServerApplication {
         private int[] connectedClients = new int[100];
         private int NumberOfConnectedClients = 0;
         private Team[] Teams = new Team[50];
-        private Dictionary<string, Bullet> Bullets;
         
 
         private GameState _state;
@@ -124,7 +107,6 @@ namespace ServerApplication {
                 }
             }
             _state = GameState.Empty;
-            Bullets = new Dictionary<string, Bullet>();
         }
 
         public Game(int index, int ClientIndex) {
@@ -137,7 +119,6 @@ namespace ServerApplication {
             }
             _state = GameState.Empty;
             AddPlayer(ClientIndex);
-            Bullets = new Dictionary<string, Bullet>();
         }
 
         public bool AddPlayer(int ClientIndex) {
@@ -204,16 +185,6 @@ namespace ServerApplication {
             return -1;
         }
 
-        public void AddBullet(string bulletId,float x, float y, float z, float rotY, float speed, float lifetime) {
-            Bullets.Add(bulletId, new Bullet(x, y, z, rotY, speed, lifetime));
-        }
-
-        public void RemoveBullet(string bulletId) {
-            Bullet bullet;
-            if(Bullets.TryGetValue(bulletId, out bullet)){
-                Bullets.Remove(bulletId);
-            }
-        }
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
             for(int i=0; i<100; i++) {
