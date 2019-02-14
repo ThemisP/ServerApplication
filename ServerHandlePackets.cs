@@ -105,6 +105,8 @@ namespace ServerApplication {
             foreach (int clientIndex in playersInRoom) {
                 Player playerOther = Network.Clients[clientIndex].player;
                 buffer.WriteInt(playerOther.GetId());
+                buffer.WriteString(playerOther.GetUsername());
+                buffer.WriteInt(playerOther.GetTeamNumber());
                 buffer.WriteFloat(playerOther.GetPosX());
                 buffer.WriteFloat(playerOther.GetPosY());
                 buffer.WriteFloat(playerOther.GetPosZ());
@@ -128,26 +130,26 @@ namespace ServerApplication {
             float rotY = buffer.ReadFloat();
             float speed = buffer.ReadFloat();
             float lifetime = buffer.ReadFloat();
+            float damage = buffer.ReadFloat();
 
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
 
 
-            Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
+            //Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
 
             //EveryTime a player sends its location, the server responds by sending that player the locations of other players
             buffer.Clear();
             int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
-            foreach (int clientIndex in playersInRoom) {
-                buffer.WriteInt(3);// 3 is for client to handle bullet spawn;
-                buffer.WriteString(bulletID);
-                buffer.WriteFloat(posX);
-                buffer.WriteFloat(posY);
-                buffer.WriteFloat(posZ);
-                buffer.WriteFloat(rotY);
-                buffer.WriteFloat(speed);
-                buffer.WriteFloat(lifetime);
-                //Console.WriteLine("Sending player " + playerOther.GetId() + " with location ("
-                //    + playerOther.GetPosX() + playerOther.GetPosY() + playerOther.GetPosZ());
+            buffer.WriteInt(3);// 3 is for client to handle bullet spawn;
+            buffer.WriteString(bulletID);
+            buffer.WriteFloat(posX);
+            buffer.WriteFloat(posY);
+            buffer.WriteFloat(posZ);
+            buffer.WriteFloat(rotY);
+            buffer.WriteFloat(speed);
+            buffer.WriteFloat(lifetime);
+            buffer.WriteFloat(damage);
+            foreach (int clientIndex in playersInRoom) { 
                 Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[clientIndex].UdpIP);
             }
         }
@@ -356,7 +358,7 @@ namespace ServerApplication {
             int packetnum = buffer.ReadInt();
             string bullet_id = buffer.ReadString();
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            Network.instance.gameHandler.RemoveBullet(gameRoomIndex, bullet_id);
+            //Network.instance.gameHandler.RemoveBullet(gameRoomIndex, bullet_id);
             int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
 
             foreach (int clientIndex in playersInRoom) {
@@ -385,7 +387,7 @@ namespace ServerApplication {
             }
 
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
+            //Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
             int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
 
             foreach (int clientIndex in playersInRoom) {
