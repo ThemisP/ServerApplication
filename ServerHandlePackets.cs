@@ -24,7 +24,6 @@ namespace ServerApplication {
             PacketsTcp.Add(8, HandleJoinGameSolo);
             PacketsTcp.Add(9, HandleJoinGameDuo);
             PacketsTcp.Add(10, HandleGetPlayersInGame);
-            PacketsTcp.Add(11, HandleDestroyBullet);
             PacketsTcp.Add(12, HandlePlayerDamageTaken);
 
             PacketsUdp = new Dictionary<int, Packet_>();
@@ -149,7 +148,7 @@ namespace ServerApplication {
             buffer.WriteFloat(speed);
             buffer.WriteFloat(lifetime);
             buffer.WriteFloat(damage);
-            foreach (int clientIndex in playersInRoom) { 
+            foreach (int clientIndex in playersInRoom) {
                 Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[clientIndex].UdpIP);
             }
         }
@@ -171,7 +170,7 @@ namespace ServerApplication {
             }
             Console.WriteLine("Login attempt from: " + username);
         }
-        
+
         //Packetnum = 2
         void HandleCreateRoom(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
@@ -188,7 +187,7 @@ namespace ServerApplication {
             if (roomIndex != -1) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray() ,0,buffer.Length());
         }
-        
+
         //Packetnum = 5
         void HandleGetPlayersInRoom(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
@@ -314,7 +313,7 @@ namespace ServerApplication {
             buffer.WriteFloat(playerOne.GetPosY());
             buffer.WriteFloat(playerOne.GetPosZ());
             buffer.WriteFloat(playerOne.GetRotY());
-            
+
             buffer.WriteInt(playerTwo.GetId());
             buffer.WriteInt(playerTwo.GetTeamNumber());
             buffer.WriteString(playerTwo.GetUsername());
@@ -377,7 +376,7 @@ namespace ServerApplication {
             int packetnum = buffer.ReadInt();
             string bullet_id = buffer.ReadString();
             float damageTaken = buffer.ReadFloat();
-            
+
             Player player = Network.Clients[index].player;
             player.TakeDamage(damageTaken);
             if (!player.IsAlive()) {
