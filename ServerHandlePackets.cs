@@ -392,6 +392,7 @@ namespace ServerApplication {
             buffer.Clear();
             buffer.WriteInt(9);
             buffer.WriteInt(index);
+            buffer.WriteInt(player.GetTeamNumber());
             buffer.WriteString(bullet_id);
             buffer.WriteInt((player.IsAlive()) ? 1 : 0);
             buffer.WriteFloat(player.GetHealth());
@@ -400,6 +401,7 @@ namespace ServerApplication {
             }
         }
 
+        //PacketNum = 13
         void HandleLeaveGame(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
@@ -412,15 +414,19 @@ namespace ServerApplication {
             buffer.WriteInt(13);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
 
-            //int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
-            //buffer.Clear();
-            //buffer.WriteInt(13);
-            //buffer.WriteInt(index);
-            
-            //foreach (int clientIndex in playersInRoom) {
-            //    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-            //}
+            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+            buffer.Clear();
+            buffer.WriteInt(11);
+            buffer.WriteInt(index);
+            buffer.WriteInt(Network.Clients[index].player.GetTeamNumber());
+
+            foreach (int clientIndex in playersInRoom) {
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            }
         }
+
+        //PacketNum = 14
+        
         #endregion
     }
 }
