@@ -37,5 +37,6 @@ namespace ServerApplication {
         public bool isEmpty() {
             return empty;
         }
+
     }
 }

@@ -118,5 +118,11 @@ namespace ServerApplication {
         public int[] GetPlayers() {
             return players;
         }
+
+        //TODO: WIP
+        public void LeaveRoom(int playerIndex) {
+            if (_state == RoomState.Empty) return;
+
+        }
     }
 }

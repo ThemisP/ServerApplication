@@ -25,6 +25,7 @@ namespace ServerApplication {
             PacketsTcp.Add(9, HandleJoinGameDuo);
             PacketsTcp.Add(10, HandleGetPlayersInGame);
             PacketsTcp.Add(12, HandlePlayerDamageTaken);
+            PacketsTcp.Add(13, HandleLeaveGame);
 
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
@@ -388,17 +389,37 @@ namespace ServerApplication {
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
             //Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
             int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
-
+            buffer.Clear();
+            buffer.WriteInt(9);
+            buffer.WriteInt(index);
+            buffer.WriteString(bullet_id);
+            buffer.WriteInt((player.IsAlive()) ? 1 : 0);
+            buffer.WriteFloat(player.GetHealth());
             foreach (int clientIndex in playersInRoom) {
-                buffer.Clear();
-                buffer.WriteInt(9);
-                buffer.WriteInt(index);
-                buffer.WriteString(bullet_id);
-                buffer.WriteInt((player.IsAlive()) ? 1 : 0);
-                buffer.WriteFloat(player.GetHealth());
-
                 Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             }
+        }
+
+        void HandleLeaveGame(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+
+            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+            Network.instance.gameHandler.LeaveGame(gameRoomIndex, index);
+
+            buffer.Clear();
+            buffer.WriteInt(13);
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+
+            //int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+            //buffer.Clear();
+            //buffer.WriteInt(13);
+            //buffer.WriteInt(index);
+            
+            //foreach (int clientIndex in playersInRoom) {
+            //    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            //}
         }
         #endregion
     }

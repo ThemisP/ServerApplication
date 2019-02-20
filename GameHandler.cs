@@ -82,6 +82,12 @@ namespace ServerApplication {
             }
             return null;
         }
+
+        public void LeaveGame(int gameIndex, int clientIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].LeaveGame(clientIndex);
+            }
+        }
     }
 
     class Game {
@@ -218,5 +224,11 @@ namespace ServerApplication {
             return players.ToArray();
         }
 
+        public void LeaveGame(int clientIndex) {            
+            for(int i=0; i<100; i++) {
+                if (connectedClients[i] == clientIndex)
+                    connectedClients[i] = -1;
+            }
+        }
     }
 }
