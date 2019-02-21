@@ -169,6 +169,11 @@ namespace ServerApplication {
         public void AddKill() {
             this.kills +=1;
         }
+
+        public void LeaveRoom() {
+            this.inLobby = false;
+            this.roomNumber = -1;            
+        }
         #endregion
     }
 }

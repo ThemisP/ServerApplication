@@ -22,7 +22,7 @@ namespace ServerApplication {
         //Finds the next available spot and creates a room with the specified index
         public int CreateRoom(int clientIndex, int maxPlayers) {
             for (int i = 0; i < 100; i++) {
-                if (_rooms[i] == null) {
+                if (_rooms[i] == null || _rooms[i].GetRoomState() == Room.RoomState.Empty) {
                     _rooms[i] = new Room(i, maxPlayers, clientIndex);
                     Console.WriteLine("Room created at index " + i + " successfully by player " + Network.Clients[clientIndex].player.GetUsername());
                     return i;
@@ -54,6 +54,14 @@ namespace ServerApplication {
         public Room[] GetRooms() {
             return this._rooms;
         }
+
+        public void LeaveRoom(int roomIndex, int clientIndex) {
+            if(_rooms[roomIndex] != null) {
+                _rooms[roomIndex].LeaveRoom(clientIndex);
+            } else {
+                Console.WriteLine("Room index :" + roomIndex + "does not exist");
+            }
+        }
     }
 
     class Room {
@@ -62,7 +70,7 @@ namespace ServerApplication {
         public int maxPlayers;
 
         private RoomState _state;
-        private enum RoomState {
+        public enum RoomState {
             Searching,
             Empty,
             Full
@@ -122,7 +130,18 @@ namespace ServerApplication {
         //TODO: WIP
         public void LeaveRoom(int playerIndex) {
             if (_state == RoomState.Empty) return;
+            for(int i=0; i<maxPlayers; i++) {
+                if(players[i] == playerIndex) {
+                    players[i] = -1;
+                    Network.Clients[playerIndex].player.LeaveRoom();
+                    if (_state == RoomState.Full) _state = RoomState.Searching;
+                    else _state = RoomState.Empty;
+                }
+            }
+        }
 
+        public RoomState GetRoomState() {
+            return this._state;
         }
     }
 }

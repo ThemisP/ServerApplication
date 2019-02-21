@@ -17,6 +17,7 @@ namespace ServerApplication {
             PacketsTcp = new Dictionary<int, Packet_>();
             PacketsTcp.Add(1, HandleLogin);
             PacketsTcp.Add(2, HandleCreateRoom);
+            PacketsTcp.Add(3, HandleBulletSpawn);
 
             PacketsTcp.Add(5, HandleGetPlayersInRoom);
             PacketsTcp.Add(6, HandleJoinRoom);
@@ -26,11 +27,12 @@ namespace ServerApplication {
             PacketsTcp.Add(10, HandleGetPlayersInGame);
             PacketsTcp.Add(12, HandlePlayerDamageTaken);
             PacketsTcp.Add(13, HandleLeaveGame);
+            PacketsTcp.Add(14, HandleLeaveRoom);
 
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
             PacketsUdp.Add(2, HandlePlayerLocation);
-            PacketsUdp.Add(3, HandleBulletSpawn);
+            
         }
 
         public void HandleData(int index, byte[] data) {
@@ -117,42 +119,7 @@ namespace ServerApplication {
             }
             Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
         }
-        //Packetnum = 3
-        void HandleBulletSpawn(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
-            string datetime = buffer.ReadString();
-            string bulletID = buffer.ReadString();
-            float posX = buffer.ReadFloat();
-            float posY = buffer.ReadFloat();
-            float posZ = buffer.ReadFloat();
-            float rotY = buffer.ReadFloat();
-            float speed = buffer.ReadFloat();
-            float lifetime = buffer.ReadFloat();
-            float damage = buffer.ReadFloat();
-
-            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-
-
-            //Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
-
-            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
-            buffer.Clear();
-            int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
-            buffer.WriteInt(3);// 3 is for client to handle bullet spawn;
-            buffer.WriteString(bulletID);
-            buffer.WriteFloat(posX);
-            buffer.WriteFloat(posY);
-            buffer.WriteFloat(posZ);
-            buffer.WriteFloat(rotY);
-            buffer.WriteFloat(speed);
-            buffer.WriteFloat(lifetime);
-            buffer.WriteFloat(damage);
-            foreach (int clientIndex in playersInRoom) {
-                Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[clientIndex].UdpIP);
-            }
-        }
+        
         #endregion
 
         #region "Handle TCP packets"
@@ -187,6 +154,45 @@ namespace ServerApplication {
             buffer.WriteInt(roomIndex);
             if (roomIndex != -1) Network.Clients[index].player.SetRoomNumber(roomIndex);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray() ,0,buffer.Length());
+        }
+
+        //Packetnum = 3
+        void HandleBulletSpawn(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            string datetime = buffer.ReadString();
+            string bulletID = buffer.ReadString();
+            int bulletTeam = buffer.ReadInt();
+            float posX = buffer.ReadFloat();
+            float posY = buffer.ReadFloat();
+            float posZ = buffer.ReadFloat();
+            float rotY = buffer.ReadFloat();
+            float speed = buffer.ReadFloat();
+            float lifetime = buffer.ReadFloat();
+            float damage = buffer.ReadFloat();
+
+            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+
+
+            //Network.instance.gameHandler.AddBullet(gameRoomIndex, bulletID, posX, posY, posZ, rotY, speed, lifetime);
+
+            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
+            buffer.Clear();
+            int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
+            buffer.WriteInt(14);// 3 is for client to handle bullet spawn;
+            buffer.WriteString(bulletID);
+            buffer.WriteInt(bulletTeam);
+            buffer.WriteFloat(posX);
+            buffer.WriteFloat(posY);
+            buffer.WriteFloat(posZ);
+            buffer.WriteFloat(rotY);
+            buffer.WriteFloat(speed);
+            buffer.WriteFloat(lifetime);
+            buffer.WriteFloat(damage);
+            foreach (int clientIndex in playersInRoom) {
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            }
         }
 
         //Packetnum = 5
@@ -296,6 +302,9 @@ namespace ServerApplication {
                 buffer2.WriteInt(index);
                 buffer2.WriteString(Network.Clients[index].player.GetUsername());
                 Network.Clients[playerTwoIndex].TcpStream.Write(buffer2.BuffToArray(), 0, buffer2.Length());
+
+                //Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+                //Network.instance.roomHandler.LeaveRoom(roomIndex, playerTwoIndex);
             }
 
             int[] playersInGame = Network.instance.gameHandler.GetAlivePlayersInGame(roomIndex, index);
@@ -426,7 +435,14 @@ namespace ServerApplication {
         }
 
         //PacketNum = 14
-        
+        void HandleLeaveRoom(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetnum = buffer.ReadInt();
+            int roomIndex = Network.Clients[index].player.GetRoomIndex();
+
+            Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+        }
         #endregion
     }
 }
