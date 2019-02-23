@@ -303,8 +303,8 @@ namespace ServerApplication {
                 buffer2.WriteString(Network.Clients[index].player.GetUsername());
                 Network.Clients[playerTwoIndex].TcpStream.Write(buffer2.BuffToArray(), 0, buffer2.Length());
 
-                //Network.instance.roomHandler.LeaveRoom(roomIndex, index);
-                //Network.instance.roomHandler.LeaveRoom(roomIndex, playerTwoIndex);
+                Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+                Network.instance.roomHandler.LeaveRoom(roomIndex, playerTwoIndex);
             }
 
             int[] playersInGame = Network.instance.gameHandler.GetAlivePlayersInGame(roomIndex, index);
