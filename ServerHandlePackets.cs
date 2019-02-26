@@ -268,9 +268,18 @@ namespace ServerApplication {
 
             int roomIndex = Network.Clients[index].player.GetRoomIndex();
             int[] playersInRoom = Network.instance.roomHandler.GetPlayersInRoom(roomIndex);
+            
             int playerTwoIndex = playersInRoom[0];
             if (playerTwoIndex == index) playerTwoIndex = playersInRoom[1];
+            if (playerTwoIndex == -1) {
+                buffer.Clear();
+                buffer.WriteInt(6);
+                buffer.WriteInt(0);
+                Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                return;
+            }
             int teamIndex;
+
 
             if (playerTwoIndex != -1)
                 teamIndex = Network.instance.gameHandler.JoinGame(index, playerTwoIndex, GameIndex);

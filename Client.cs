@@ -23,10 +23,12 @@ namespace ServerApplication {
         }
 
         void CloseTcpConnection() {
-            TcpClient.Close();
-            TcpClient = null;
-            Network.instance.gameHandler.LeaveGame(player.GetGameRoomIndex(), Index);
-            Console.WriteLine("Player Disconnected (tcp):" + IP.ToString());
+            if (TcpClient != null) {
+                TcpClient.Close();
+                TcpClient = null;
+                Network.instance.gameHandler.LeaveGame(player.GetGameRoomIndex(), Index);
+                Console.WriteLine("Player Disconnected (tcp):" + IP.ToString());
+            }
         }
         
         void OnReceiveTcpData(IAsyncResult result) {
