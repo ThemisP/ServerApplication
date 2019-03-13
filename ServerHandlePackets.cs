@@ -142,6 +142,13 @@ namespace ServerApplication {
         //Packetnum = 2
         void HandleCreateRoom(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            if (Network.instance.roomHandler.AllRoomsTaken()) {
+                buffer.WriteInt(3);
+                buffer.WriteInt(-1);
+                buffer.WriteInt(-1);
+                Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                return;
+            }
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
             int maxPlayers = buffer.ReadInt();

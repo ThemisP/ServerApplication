@@ -9,5 +9,7 @@ namespace ServerApplication {
         public const int MAX_PLAYERS = 100;
         public const int SEND_BUFFER_SIZE = 4096;
         public const int RECEIVE_BUFFER_SIZE = 4096;
+
+        public const int MAX_ROOMS = 1;
     }
 }

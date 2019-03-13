@@ -62,6 +62,19 @@ namespace ServerApplication {
                 Console.WriteLine("Room index :" + roomIndex + "does not exist");
             }
         }
+
+        public bool AllRoomsTaken() {
+            int count = 0;
+            foreach (Room r in _rooms) {
+                if (r != null) {
+                    if (r.GetRoomState() == Room.RoomState.Full) {
+                        count ++;
+                    }
+                }
+            }
+
+            return count == Settings.MAX_ROOMS;
+        }
     }
 
     class Room {
