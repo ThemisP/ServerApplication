@@ -198,7 +198,6 @@ namespace ServerApplication {
         //Packetnum = 5
         void HandleGetPlayersInRoom(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            ByteBuffer.ByteBuffer lengthBuffer = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
             int roomIndex = buffer.ReadInt();

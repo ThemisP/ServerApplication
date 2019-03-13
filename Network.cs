@@ -44,7 +44,7 @@ namespace ServerApplication {
                     Clients[i].Index = i;
                     Clients[i].IP = (IPEndPoint)client.Client.RemoteEndPoint;
                     Clients[i].Start();
-                    Console.WriteLine("Incomming connection from " + Clients[i].IP.ToString() + " || index: " + i);
+                    Console.WriteLine("Incoming connection from " + Clients[i].IP.ToString() + " || index: " + i);
                     //send welcome messages
                     ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
                     buffer.WriteInt(1);

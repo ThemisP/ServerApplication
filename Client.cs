@@ -18,8 +18,8 @@ namespace ServerApplication {
             TcpClient.SendBufferSize = Settings.SEND_BUFFER_SIZE;
             TcpClient.ReceiveBufferSize = Settings.RECEIVE_BUFFER_SIZE;            
             TcpStream = TcpClient.GetStream();
-            Array.Resize(ref readbuff, TcpClient.ReceiveBufferSize);
-            TcpStream.BeginRead(readbuff, 0, TcpClient.ReceiveBufferSize, OnReceiveTcpData, null);
+            Array.Resize(ref readbuff, Settings.RECEIVE_BUFFER_SIZE);
+            TcpStream.BeginRead(readbuff, 0, Settings.RECEIVE_BUFFER_SIZE, OnReceiveTcpData, null);
         }
 
         void CloseTcpConnection() {
@@ -53,7 +53,7 @@ namespace ServerApplication {
                 if(TcpClient == null) {
                     return;
                 }
-                TcpStream.BeginRead(readbuff, 0, TcpClient.ReceiveBufferSize, OnReceiveTcpData, null);
+                TcpStream.BeginRead(readbuff, 0, Settings.RECEIVE_BUFFER_SIZE, OnReceiveTcpData, null);
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 CloseTcpConnection();
