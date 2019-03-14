@@ -28,6 +28,7 @@ namespace ServerApplication {
             PacketsTcp.Add(12, HandlePlayerDamageTaken);
             PacketsTcp.Add(13, HandleLeaveGame);
             PacketsTcp.Add(14, HandleLeaveRoom);
+            PacketsTcp.Add(15, HandleIsGameReady);
 
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
@@ -457,6 +458,16 @@ namespace ServerApplication {
             int roomIndex = Network.Clients[index].player.GetRoomIndex();
 
             Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+        }
+
+        void HandleIsGameReady(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
+            int areAllRoomsFull = (numberOfFullRooms == Settings.MAX_ROOMS) ? 1 : 0;
+            buffer.WriteInt(15);
+            buffer.WriteInt(areAllRoomsFull);
+            buffer.WriteInt(numberOfFullRooms);
+            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
         #endregion
     }
