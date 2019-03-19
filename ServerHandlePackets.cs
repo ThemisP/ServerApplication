@@ -460,13 +460,21 @@ namespace ServerApplication {
             Network.instance.roomHandler.LeaveRoom(roomIndex, index);
         }
 
+        // PacketNum = 15
         void HandleIsGameReady(int index, byte[] data) {
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            int packetNum = buffer.ReadInt();
+            int gameIndex = buffer.ReadInt();
+            buffer.Clear();
             int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
-            int areAllRoomsFull = (numberOfFullRooms == Settings.MAX_ROOMS) ? 1 : 0;
+            float timer = (Settings.MAX_START_TIMER - Network.instance.gameHandler.GetStartTimer(gameIndex));
+            Console.Log(timer);
+            int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || timer <= 0f) ? 1 : 0;
             buffer.WriteInt(15);
-            buffer.WriteInt(areAllRoomsFull);
+            buffer.WriteInt(gameReady);
             buffer.WriteInt(numberOfFullRooms);
+            buffer.WriteFloat(timer);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
         #endregion

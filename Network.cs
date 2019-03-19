@@ -16,7 +16,7 @@ namespace ServerApplication {
 
 
         public void ServerStart() {
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 Clients[i] = new Client();
             }
             roomHandler = new RoomHandler();
@@ -38,7 +38,7 @@ namespace ServerApplication {
             client.NoDelay = false;
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
 
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 if(Clients[i].TcpClient == null) {
                     Clients[i].TcpClient = client;
                     Clients[i].Index = i;

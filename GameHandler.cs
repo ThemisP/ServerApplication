@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace ServerApplication {
     class GameHandler {
@@ -15,6 +16,7 @@ namespace ServerApplication {
             for (int i = 0; i < 100; i++) {
                 if (_games[i] == null) {
                     _games[i] = new Game(i);
+                    _games[i].StartTimer();
                     Console.WriteLine("Game created at index " + i);
                     return i;
                 }
@@ -29,6 +31,7 @@ namespace ServerApplication {
             for(int i = 0; i<100; i++) {
                 if(_games[i] == null) {
                     _games[i] = new Game(i, ClientIndex);
+                    _games[i].StartTimer();
                     Console.WriteLine("Game created at index " + i + ", by user: " + Network.Clients[ClientIndex].player.GetUsername());
                     return i;
                 }
@@ -36,7 +39,6 @@ namespace ServerApplication {
             Console.WriteLine("Game was unable to be created no empty spots available");
             return -1;
         }
-
         public bool JoinGame(int ClientIndex ,int GameIndex) {
             if (_games[GameIndex] != null) {
                 if (_games[GameIndex].AddPlayer(ClientIndex)) {
@@ -88,14 +90,23 @@ namespace ServerApplication {
                 _games[gameIndex].LeaveGame(clientIndex);
             }
         }
+
+        public float GetStartTimer(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                return _games[gameIndex].timeElapsed;
+            }
+
+            return -1;
+        }
     }
 
     class Game {
         private int GameIndex;
-        private int[] connectedClients = new int[100];
+        private int[] connectedClients = new int[Settings.MAX_PLAYERS];
         private int NumberOfConnectedClients = 0;
-        private Team[] Teams = new Team[50];
-        
+        private Team[] Teams = new Team[Settings.MAX_PLAYERS/2];
+        Timer startTimer = new Timer();
+        public float timeElapsed = 0f;
 
         private GameState _state;
         private enum GameState {
@@ -106,9 +117,9 @@ namespace ServerApplication {
 
         public Game(int index) {
             this.GameIndex = index;
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
-                if (i < 50) {
+                if (i < Settings.MAX_PLAYERS/2) {
                     Teams[i] = new Team(i, GameIndex);
                 }
             }
@@ -117,9 +128,9 @@ namespace ServerApplication {
 
         public Game(int index, int ClientIndex) {
             this.GameIndex = index;
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
-                if (i < 50) {
+                if (i < Settings.MAX_PLAYERS/2) {
                     Teams[i] = new Team(i, GameIndex);
                 }
             }
@@ -131,7 +142,7 @@ namespace ServerApplication {
             if (_state == GameState.Full) return false;
             int count = 0;
             bool found = false;
-            while(!found && count < 100) {
+            while(!found && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     connectedClients[count] = ClientIndex;
                     found = true;
@@ -141,7 +152,7 @@ namespace ServerApplication {
 
             if (found) {
                 NumberOfConnectedClients += 1;
-                if (NumberOfConnectedClients==100) {
+                if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
@@ -157,7 +168,7 @@ namespace ServerApplication {
             int found = 0;
             int indexOne = 0;
             int indexTwo = 0;
-            while (found<2 && count < 100) {
+            while (found<2 && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     if (found == 0) indexOne = count;
                     else indexTwo = count;
@@ -171,7 +182,7 @@ namespace ServerApplication {
                 connectedClients[indexTwo] = ClientTwoIndex;
                 int teamIndex = AddTeam(ClientOneIndex, ClientTwoIndex);
                 NumberOfConnectedClients += 2;
-                if (NumberOfConnectedClients==100) {
+                if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
@@ -193,7 +204,7 @@ namespace ServerApplication {
 
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 if(connectedClients[i] != -1) {
                     players.Add(connectedClients[i]);
                 }
@@ -204,7 +215,7 @@ namespace ServerApplication {
         public int[] GetAlivePlayersBut(int index) {
             List<int> players = new List<int>();
             
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 if (connectedClients[i] != -1 && connectedClients[i] != index) {
                     if(Network.Clients[connectedClients[i]].player.IsAlive())
                         players.Add(connectedClients[i]);
@@ -216,7 +227,7 @@ namespace ServerApplication {
         public int[] GetConnectedPlayersBut(int index) {
             List<int> players = new List<int>();
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 if (connectedClients[i] != -1 && connectedClients[i] != index) {
                     players.Add(connectedClients[i]);
                 }
@@ -225,10 +236,27 @@ namespace ServerApplication {
         }
 
         public void LeaveGame(int clientIndex) {            
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 if (connectedClients[i] == clientIndex)
                     connectedClients[i] = -1;
             }
         }
+
+
+        public void StartTimer() {
+            this.startTimer.Elapsed += new ElapsedEventHandler(IncrementTimer);
+            startTimer.Interval = 5000;
+            startTimer.Enabled = true;
+        }
+
+        private void IncrementTimer(object source, ElapsedEventArgs e){
+            this.timeElapsed += 5f;
+            if (timeElapsed >= Settings.MAX_START_TIMER) {
+                this.startTimer.Enabled = false;
+                timeElapsed = Settings.MAX_START_TIMER;
+                _state = GameState.Full;
+            }
+        }
+
     }
 }
