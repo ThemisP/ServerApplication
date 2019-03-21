@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace ServerApplication {
     class RoomHandler {
-        private int NumberOfFullRooms = 0;
         private Room[] _rooms = new Room[100];
 
         //Tries to find a room with the specified index, if it doesn't exist then it creates it.
