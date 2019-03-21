@@ -416,6 +416,7 @@ namespace ServerApplication {
                 buffer.Clear();
                 buffer.WriteInt(10);
                 Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                // return;
             }
 
             int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
@@ -499,14 +500,21 @@ namespace ServerApplication {
             int roomIndex = buffer.ReadInt();
             int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
             if (gameOver == 1) {
-                StartNewGameWithConnections();
+                StartNewGameWithConnections(gameIndex);
             } 
 
             return;
             // Network.instance.roomHandler.HandlePlayerDeath(roomIndex); 
         }
         #endregion
-        void StartNewGameWithConnections() {
+        void StartNewGameWithConnections(int gameIndex) {
+            Network.instance.gameHandler.NewGame(gameIndex);
+            int[] playerIndex = Network.instance.gameHandler.GetAlivePlayersInGame(gameIndex);
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteInt(16);
+            foreach(int clientIndex in playerIndex) {
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            }
             return;
         }
     }

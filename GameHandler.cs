@@ -85,6 +85,14 @@ namespace ServerApplication {
             return null;
         }
 
+        public int[] GetAlivePlayersInGame(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                return _games[gameIndex].GetConnectedPlayers();
+            }
+
+            return null;
+        }
+
         public void LeaveGame(int gameIndex, int clientIndex) {
             if (_games[gameIndex] != null) {
                 _games[gameIndex].LeaveGame(clientIndex);
@@ -115,6 +123,12 @@ namespace ServerApplication {
 
             return ret;
         }   
+
+        public void NewGame(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].NewGame();
+            }
+        }
     }
 
     class Game {
@@ -291,5 +305,13 @@ namespace ServerApplication {
             return this.activeTeams;
         }
 
+        public void NewGame() {
+            foreach(Team t in Teams) {
+                if (t != null)
+                    t.ResetPlayers();
+            }
+
+            RestartTimer();
+        }
     }
 }

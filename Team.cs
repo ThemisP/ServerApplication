@@ -58,5 +58,10 @@ namespace ServerApplication {
             }
         }
 
+        public void ResetPlayers() {
+            player1.Reset();
+            player2.Reset();
+        }
+
     }
 }

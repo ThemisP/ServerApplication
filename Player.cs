@@ -175,5 +175,12 @@ namespace ServerApplication {
             this.roomNumber = -1;            
         }
         #endregion
+
+        public void Reset() {
+            kills = 0;
+            damageDealt = 0;
+            this.isAlive = true;
+            health = 100f;
+        }
     }
 }
