@@ -29,6 +29,7 @@ namespace ServerApplication {
             PacketsTcp.Add(13, HandleLeaveGame);
             PacketsTcp.Add(14, HandleLeaveRoom);
             PacketsTcp.Add(15, HandleIsGameReady);
+            PacketsTcp.Add(16, HandlePlayerDeath);
 
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
@@ -468,15 +469,39 @@ namespace ServerApplication {
             int gameIndex = buffer.ReadInt();
             buffer.Clear();
             int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
-            float timer = (Settings.MAX_START_TIMER - Network.instance.gameHandler.GetStartTimer(gameIndex));
-            Console.Log(timer);
-            int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || timer <= 0f) ? 1 : 0;
+            float timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+            if (timer <= 0f && numberOfFullRooms < 2) { // Reset timer, not enough players in game
+                Network.instance.gameHandler.RestartStartTimer(gameIndex);
+                timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+            }
+            int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= 2) && (timer <= 0f))) ? 1 : 0;
             buffer.WriteInt(15);
             buffer.WriteInt(gameReady);
             buffer.WriteInt(numberOfFullRooms);
             buffer.WriteFloat(timer);
             Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
+
+        
+        // PacketNum = 16
+        void HandlePlayerDeath(int index, byte[] data) {
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteBytes(data);
+            buffer.ReadInt();
+            int teamIndex = buffer.ReadInt();
+            int gameIndex =  buffer.ReadInt();
+            int roomIndex = buffer.ReadInt();
+            int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
+            if (gameOver == 1) {
+                StartNewGameWithConnections();
+            } 
+
+            return;
+            // Network.instance.roomHandler.HandlePlayerDeath(roomIndex); 
+        }
         #endregion
+        void StartNewGameWithConnections() {
+            return;
+        }
     }
 }

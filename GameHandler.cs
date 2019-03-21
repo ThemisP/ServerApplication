@@ -93,11 +93,28 @@ namespace ServerApplication {
 
         public float GetStartTimer(int gameIndex) {
             if (_games[gameIndex] != null) {
-                return _games[gameIndex].timeElapsed;
+                return Settings.MAX_START_TIMER - _games[gameIndex].timeElapsed;
             }
 
-            return -1;
+            return 1f;
         }
+
+        public void RestartStartTimer(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].RestartTimer();
+            }
+
+            return;
+        }
+
+        public int HandlePlayerDeath(int teamIndex, int gameIndex, int clientIndex) {
+            int ret = 0;
+            if (_games[gameIndex] != null) {
+                ret = (_games[gameIndex].RegisterPlayerDeath(teamIndex, clientIndex) > 1) ? 0 : 1;
+            }
+
+            return ret;
+        }   
     }
 
     class Game {
@@ -105,6 +122,7 @@ namespace ServerApplication {
         private int[] connectedClients = new int[Settings.MAX_PLAYERS];
         private int NumberOfConnectedClients = 0;
         private Team[] Teams = new Team[Settings.MAX_PLAYERS/2];
+        private int activeTeams = 0;
         Timer startTimer = new Timer();
         public float timeElapsed = 0f;
 
@@ -115,8 +133,8 @@ namespace ServerApplication {
             Full
         }
 
-        public Game(int index) {
-            this.GameIndex = index;
+        public Game(int gameIndex) {
+            this.GameIndex = gameIndex;
             for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
                 if (i < Settings.MAX_PLAYERS/2) {
@@ -126,8 +144,8 @@ namespace ServerApplication {
             _state = GameState.Empty;
         }
 
-        public Game(int index, int ClientIndex) {
-            this.GameIndex = index;
+        public Game(int gameIndex, int ClientIndex) {
+            this.GameIndex = gameIndex;
             for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
                 if (i < Settings.MAX_PLAYERS/2) {
@@ -196,6 +214,7 @@ namespace ServerApplication {
             foreach (Team team in Teams) {
                 if (team.isEmpty()) {
                     team.createTeam(ClientOneIndex,ClientTwoIndex);
+                    activeTeams += 1;
                     return team.getIndex();
                 }
             }
@@ -256,6 +275,20 @@ namespace ServerApplication {
                 timeElapsed = Settings.MAX_START_TIMER;
                 _state = GameState.Full;
             }
+        }
+
+        public void RestartTimer() {
+            this.timeElapsed = 0f;
+            this.StartTimer();
+        }
+
+        public int RegisterPlayerDeath(int teamIndex, int clientIndex) {
+            Teams[teamIndex].SetAliveStatus(clientIndex, false);
+
+            if (!Teams[teamIndex].isTeamAlive())
+                this.activeTeams -= 1;
+
+            return this.activeTeams;
         }
 
     }

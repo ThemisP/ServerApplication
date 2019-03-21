@@ -38,5 +38,25 @@ namespace ServerApplication {
             return empty;
         }
 
+        public bool isPlayer1Alive() {
+            return player1.IsAlive();
+        }
+
+        public bool isPlayer2Alive() {
+            return player2.IsAlive();
+        }
+
+        public bool isTeamAlive() {
+            return player1.IsAlive() || player2.IsAlive();
+        }
+
+        public void SetAliveStatus(int clientIndex, bool status) {
+            if (player1.GetId() == clientIndex) {
+                player1.SetIsAlive(status);
+            } else if (player2.GetId() == clientIndex) {
+                player2.SetIsAlive(status);
+            }
+        }
+
     }
 }
