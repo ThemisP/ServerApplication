@@ -129,6 +129,14 @@ namespace ServerApplication {
                 _games[gameIndex].NewGame();
             }
         }
+
+        public int[] GetAllPlayers(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                return _games[gameIndex].GetConnectedPlayers();
+            }
+
+            return null;
+        }
     }
 
     class Game {

@@ -80,46 +80,51 @@ namespace ServerApplication {
         }
         //Packetnum = 2
         void HandlePlayerLocation(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
-            string datetime = buffer.ReadString();
-            float posX = buffer.ReadFloat();
-            float posY = buffer.ReadFloat();
-            float posZ = buffer.ReadFloat();
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                int packetnum = buffer.ReadInt();
+                string datetime = buffer.ReadString();
+                float posX = buffer.ReadFloat();
+                float posY = buffer.ReadFloat();
+                float posZ = buffer.ReadFloat();
 
-            float velX = buffer.ReadFloat();
-            float velY = buffer.ReadFloat();
-            float velZ = buffer.ReadFloat();
+                float velX = buffer.ReadFloat();
+                float velY = buffer.ReadFloat();
+                float velZ = buffer.ReadFloat();
 
-            float rotY = buffer.ReadFloat();
+                float rotY = buffer.ReadFloat();
 
-            Player player = Network.Clients[index].player;
-            player.SetLocation(posX, posY, posZ);
-            player.SetVelocity(velX, velY, velZ);
-            player.SetRotation(rotY);
-            //Console.WriteLine("Player " + index + " send location at (" + player.GetPosX() + ", " + player.GetPosY() + ", " + player.GetPosZ() + ")");
+                Player player = Network.Clients[index].player;
+                player.SetLocation(posX, posY, posZ);
+                player.SetVelocity(velX, velY, velZ);
+                player.SetRotation(rotY);
+                //Console.WriteLine("Player " + index + " send location at (" + player.GetPosX() + ", " + player.GetPosY() + ", " + player.GetPosZ() + ")");
 
-            //EveryTime a player sends its location, the server responds by sending that player the locations of other players
-            buffer.Clear();
-            int gameRoomIndex = player.GetGameRoomIndex();
-            int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
-            buffer.WriteInt(2);
-            buffer.WriteInt(playersInRoom.Length);
-            foreach (int clientIndex in playersInRoom) {
-                Player playerOther = Network.Clients[clientIndex].player;
-                buffer.WriteInt(playerOther.GetId());
-                buffer.WriteString(playerOther.GetUsername());
-                buffer.WriteInt(playerOther.GetTeamNumber());
-                buffer.WriteFloat(playerOther.GetPosX());
-                buffer.WriteFloat(playerOther.GetPosY());
-                buffer.WriteFloat(playerOther.GetPosZ());
-                buffer.WriteFloat(playerOther.GetVelX());
-                buffer.WriteFloat(playerOther.GetVelY());
-                buffer.WriteFloat(playerOther.GetVelZ());
-                buffer.WriteFloat(playerOther.GetRotY());
+                //EveryTime a player sends its location, the server responds by sending that player the locations of other players
+                buffer.Clear();
+                int gameRoomIndex = player.GetGameRoomIndex();
+                int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameRoomIndex, index);
+                buffer.WriteInt(2);
+                buffer.WriteInt(playersInRoom.Length);
+                foreach (int clientIndex in playersInRoom) {
+                    Player playerOther = Network.Clients[clientIndex].player;
+                    buffer.WriteInt(playerOther.GetId());
+                    buffer.WriteString(playerOther.GetUsername());
+                    buffer.WriteInt(playerOther.GetTeamNumber());
+                    buffer.WriteFloat(playerOther.GetPosX());
+                    buffer.WriteFloat(playerOther.GetPosY());
+                    buffer.WriteFloat(playerOther.GetPosZ());
+                    buffer.WriteFloat(playerOther.GetVelX());
+                    buffer.WriteFloat(playerOther.GetVelY());
+                    buffer.WriteFloat(playerOther.GetVelZ());
+                    buffer.WriteFloat(playerOther.GetRotY());
+                }
+                Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
             }
-            Network.instance.UdpClient.Send(buffer.BuffToArray(), buffer.Length(), Network.Clients[index].UdpIP);
+
         }
         
         #endregion
@@ -404,68 +409,81 @@ namespace ServerApplication {
 
         // PacketNum = 12
         void HandlePlayerDamageTaken(int index, byte[] data){
-            ByteBuffer.ByteBuffer buffer  = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
-            string bullet_id = buffer.ReadString();
-            float damageTaken = buffer.ReadFloat();
+            try {
+                ByteBuffer.ByteBuffer buffer  = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                int packetnum = buffer.ReadInt();
+                string bullet_id = buffer.ReadString();
+                float damageTaken = buffer.ReadFloat();
 
-            Player player = Network.Clients[index].player;
-            player.TakeDamage(damageTaken);
-            if (!player.IsAlive()) {
+                Player player = Network.Clients[index].player;
+                player.TakeDamage(damageTaken);
+                if (!player.IsAlive()) {
+                    buffer.Clear();
+                    buffer.WriteInt(10);
+                    Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    // return;
+                }
+
+                int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+                //Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
+                int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
                 buffer.Clear();
-                buffer.WriteInt(10);
-                Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-                // return;
-            }
-
-            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            //Network.instance.gameHandler.RemoveBullet(0, bullet_id); // TODO: Get correct
-            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
-            buffer.Clear();
-            buffer.WriteInt(9);
-            buffer.WriteInt(index);
-            buffer.WriteInt(player.GetTeamNumber());
-            buffer.WriteString(bullet_id);
-            buffer.WriteInt((player.IsAlive()) ? 1 : 0);
-            buffer.WriteFloat(player.GetHealth());
-            foreach (int clientIndex in playersInRoom) {
-                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                buffer.WriteInt(9);
+                buffer.WriteInt(index);
+                buffer.WriteInt(player.GetTeamNumber());
+                buffer.WriteString(bullet_id);
+                buffer.WriteInt((player.IsAlive()) ? 1 : 0);
+                buffer.WriteFloat(player.GetHealth());
+                foreach (int clientIndex in playersInRoom) {
+                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                }
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
             }
         }
 
         //PacketNum = 13
         void HandleLeaveGame(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                int packetnum = buffer.ReadInt();
 
-            int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
-            Network.instance.gameHandler.LeaveGame(gameRoomIndex, index);
+                int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+                Network.instance.gameHandler.LeaveGame(gameRoomIndex, index);
 
-            buffer.Clear();
-            buffer.WriteInt(13);
-            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                buffer.Clear();
+                buffer.WriteInt(13);
+                Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
 
-            int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
-            buffer.Clear();
-            buffer.WriteInt(11);
-            buffer.WriteInt(index);
-            buffer.WriteInt(Network.Clients[index].player.GetTeamNumber());
+                int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameRoomIndex, index);
+                buffer.Clear();
+                buffer.WriteInt(11);
+                buffer.WriteInt(index);
+                buffer.WriteInt(Network.Clients[index].player.GetTeamNumber());
 
-            foreach (int clientIndex in playersInRoom) {
-                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                foreach (int clientIndex in playersInRoom) {
+                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                }
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
             }
+
         }
 
         //PacketNum = 14
         void HandleLeaveRoom(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetnum = buffer.ReadInt();
-            int roomIndex = Network.Clients[index].player.GetRoomIndex();
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                int packetnum = buffer.ReadInt();
+                int roomIndex = Network.Clients[index].player.GetRoomIndex();
 
-            Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+                Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         // PacketNum = 15
@@ -492,30 +510,28 @@ namespace ServerApplication {
         
         // PacketNum = 16
         void HandlePlayerDeath(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            buffer.ReadInt();
-            int teamIndex = buffer.ReadInt();
-            int gameIndex =  buffer.ReadInt();
-            int roomIndex = buffer.ReadInt();
-            int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
-            if (gameOver == 1) {
-                StartNewGameWithConnections(gameIndex);
-            } 
-
-            return;
-            // Network.instance.roomHandler.HandlePlayerDeath(roomIndex); 
-        }
-        #endregion
-        void StartNewGameWithConnections(int gameIndex) {
-            Network.instance.gameHandler.NewGame(gameIndex);
-            int[] playerIndex = Network.instance.gameHandler.GetAlivePlayersInGame(gameIndex);
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteInt(16);
-            foreach(int clientIndex in playerIndex) {
-                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                buffer.ReadInt();
+                int teamIndex = buffer.ReadInt();
+                int gameIndex =  buffer.ReadInt();
+                int roomIndex = buffer.ReadInt();
+                int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
+                if (gameOver == 1) {
+                    Network.instance.gameHandler.RestartStartTimer(gameIndex);
+                    buffer.Clear();
+                    buffer.WriteInt(17);
+                    foreach(int clientIndex in Network.instance.gameHandler.GetAllPlayers(gameIndex)) {
+                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    }
+                } 
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
             }
             return;
+ 
         }
+        #endregion
     }
 }
