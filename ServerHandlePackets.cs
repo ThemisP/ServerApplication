@@ -522,12 +522,12 @@ namespace ServerApplication {
                 int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
                 if (gameOver == 1) {
                     int[] players = Network.instance.gameHandler.GetAllPlayers(gameIndex);
-                    AfterGameCleanUp(gameIndex);
                     buffer.Clear();
                     buffer.WriteInt(17);
                     foreach(int clientIndex in players) {
                         Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                     }
+                    AfterGameCleanUp(gameIndex);
                 } 
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());

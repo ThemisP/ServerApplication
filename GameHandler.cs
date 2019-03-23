@@ -299,7 +299,7 @@ namespace ServerApplication {
         private void IncrementTimer(object source, ElapsedEventArgs e){
             this.timeElapsed += 5f;
             if (timeElapsed >= Settings.MAX_START_TIMER) {
-                this.startTimer.Enabled = false;
+                this.startTimer.Stop(); 
                 timeElapsed = Settings.MAX_START_TIMER;
                 _state = GameState.Full;
             }
