@@ -88,6 +88,16 @@ namespace ServerApplication {
 
             return count; 
         }
+
+        public void EmptyRooms() {
+            for(int i = 0; i < Settings.MAX_ROOMS; i++) {
+                if (_rooms[i] != null) {
+                    int roomIndex = _rooms[i].roomIndex;
+                    _rooms[i].Empty();
+                    _rooms[i] = new Room(roomIndex, 2);
+                }
+            }
+        }
     }
 
     class Room {
@@ -168,6 +178,13 @@ namespace ServerApplication {
 
         public RoomState GetRoomState() {
             return this._state;
+        }
+
+        public void Empty() {
+            for (int i = 0; i < maxPlayers; i++){
+                int index = players[i];
+                Network.Clients[index].player.LeaveRoom();
+            }
         }
     }
 }

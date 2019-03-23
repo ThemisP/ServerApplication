@@ -137,6 +137,12 @@ namespace ServerApplication {
 
             return null;
         }
+
+        public void RestartGame(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex] = new Game(gameIndex);
+            }
+        }
     }
 
     class Game {
