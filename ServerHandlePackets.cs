@@ -568,17 +568,15 @@ namespace ServerApplication {
                 ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
                 buffer.WriteBytes(data);
                 buffer.ReadInt();
-                int teamIndex = buffer.ReadInt();
-                int gameIndex = buffer.ReadInt();
-                int roomIndex = buffer.ReadInt();
-                int gameOver = Network.instance.gameHandler.HandlePlayerDeath(teamIndex, gameIndex, index);
-                if (gameOver == 1) {
-                    Network.instance.gameHandler.RestartStartTimer(gameIndex);
-                    buffer.Clear();
-                    buffer.WriteInt(17);
-                    foreach (int clientIndex in Network.instance.gameHandler.GetAllPlayers(gameIndex)) {
-                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-                    }
+                int teammateIndex = buffer.ReadInt();
+                Network.Clients[teammateIndex].player.Revive();
+                int gameRoomIndex = Network.Clients[index].player.GetGameRoomIndex();
+                int[] playersInRoom = Network.instance.gameHandler.GetAllPlayers(gameRoomIndex);
+                buffer.Clear();
+                buffer.WriteInt(18);
+                buffer.WriteInt(teammateIndex);
+                foreach (int clientIndex in playersInRoom) {
+                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                 }
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());

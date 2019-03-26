@@ -182,5 +182,10 @@ namespace ServerApplication {
             this.isAlive = true;
             health = 100f;
         }
+
+        public void Revive() {
+            this.isAlive = true;
+            health = 30f;
+        }
     }
 }
