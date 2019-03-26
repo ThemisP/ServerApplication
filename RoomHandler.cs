@@ -183,7 +183,8 @@ namespace ServerApplication {
         public void Empty() {
             for (int i = 0; i < maxPlayers; i++){
                 int index = players[i];
-                Network.Clients[index].player.LeaveRoom();
+                if(index >= 0) 
+                    Network.Clients[index].player.LeaveRoom();
             }
         }
     }
