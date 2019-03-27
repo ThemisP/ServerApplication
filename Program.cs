@@ -12,6 +12,7 @@ namespace ServerApplication {
             consoleThread = new Thread(new ThreadStart(ConsoleThread));
             consoleThread.Start();
             Network.instance.ServerStart();
+            Network.instance.gameHandler.CreateGame();
         }
 
         private static void ConsoleThread() {
