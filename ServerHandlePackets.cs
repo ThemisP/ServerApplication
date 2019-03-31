@@ -264,7 +264,7 @@ namespace ServerApplication {
                 buffer.WriteInt((joined) ? 1 : 0);
                 buffer.WriteInt(roomIndex);
                 if (joined) Network.Clients[index].player.SetRoomNumber(roomIndex);
-                Console.WriteLine($"Player {index} is trying to join room {roomIndex}");
+                Console.WriteLine($"Player {index} tried to join room {roomIndex} with success={joined}");
                 Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -356,8 +356,8 @@ namespace ServerApplication {
                     buffer2.WriteString(Network.Clients[index].player.GetUsername());
                     Network.Clients[playerTwoIndex].TcpStream.Write(buffer2.BuffToArray(), 0, buffer2.Length());
 
-                    Network.instance.roomHandler.LeaveRoom(roomIndex, index);
-                    Network.instance.roomHandler.LeaveRoom(roomIndex, playerTwoIndex);
+                    // Network.instance.roomHandler.LeaveRoom(roomIndex, index);
+                    // Network.instance.roomHandler.LeaveRoom(roomIndex, playerTwoIndex);
                 }
 
                 int[] playersInGame = Network.instance.gameHandler.GetAlivePlayersInGame(GameIndex, index);
