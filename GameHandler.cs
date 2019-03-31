@@ -214,6 +214,7 @@ namespace ServerApplication {
             int found = 0;
             int indexOne = 0;
             int indexTwo = 0;
+            NumberOfConnectedClients += 2;
             while (found<2 && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     if (found == 0) indexOne = count;
