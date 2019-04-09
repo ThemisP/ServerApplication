@@ -222,6 +222,7 @@ namespace ServerApplication {
             int found = 0;
             int indexOne = 0;
             int indexTwo = 0;
+            NumberOfConnectedClients += 2;
             while (found<2 && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     if (found == 0) indexOne = count;
@@ -235,7 +236,7 @@ namespace ServerApplication {
                 connectedClients[indexOne] = ClientOneIndex;
                 connectedClients[indexTwo] = ClientTwoIndex;
                 int teamIndex = AddTeam(ClientOneIndex, ClientTwoIndex);
-                NumberOfConnectedClients += 2;
+                // NumberOfConnectedClients += 2;
                 if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
                 } else {
@@ -292,8 +293,14 @@ namespace ServerApplication {
 
         public void LeaveGame(int clientIndex) {            
             for(int i=0; i<Settings.MAX_PLAYERS; i++) {
-                if (connectedClients[i] == clientIndex)
+                if (connectedClients[i] == clientIndex){
                     connectedClients[i] = -1;
+                    NumberOfConnectedClients -= 1;
+                }
+            }
+
+            if (NumberOfConnectedClients <= 0) {
+                RestartTimer();
             }
         }
 
