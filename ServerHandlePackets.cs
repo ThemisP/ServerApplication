@@ -12,7 +12,7 @@ namespace ServerApplication {
         private delegate void Packet_(int index, byte[] data);
         private Dictionary<int, Packet_> PacketsTcp;
         private Dictionary<int, Packet_> PacketsUdp;
-
+        private int NumberOfConnectedClients = 0;
         public void InitMessages() {
             PacketsTcp = new Dictionary<int, Packet_>();
             PacketsTcp.Add(1, HandleLogin);
@@ -32,7 +32,7 @@ namespace ServerApplication {
             PacketsTcp.Add(16, HandlePlayerDeath);
             PacketsTcp.Add(17, HandlePlayerKnockDown);
             PacketsTcp.Add(18, HandlePlayerRevive);
-
+            PacketsTcp.Add(19, HandleWaitForAllPlayersReceiveGameReady);
             PacketsUdp = new Dictionary<int, Packet_>();
             PacketsUdp.Add(1, HandleInitial);
             PacketsUdp.Add(2, HandlePlayerLocation);
@@ -134,6 +134,7 @@ namespace ServerApplication {
         #region "Handle TCP packets"
         //Packetnum = 1
         void HandleLogin(int index, byte[] data) {
+            NumberOfConnectedClients += 1;
             ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
             buffer.WriteBytes(data);
             int packetnum = buffer.ReadInt();
@@ -490,23 +491,27 @@ namespace ServerApplication {
 
         // PacketNum = 15
         void HandleIsGameReady(int index, byte[] data) {
-            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
-            buffer.WriteBytes(data);
-            int packetNum = buffer.ReadInt();
-            int gameIndex = buffer.ReadInt();
-            buffer.Clear();
-            int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
-            float timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
-            if (timer <= 0f && numberOfFullRooms < 2) { // Reset timer, not enough players in game
-                Network.instance.gameHandler.RestartStartTimer(gameIndex);
-                timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                int packetNum = buffer.ReadInt();
+                int gameIndex = buffer.ReadInt();
+                buffer.Clear();
+                int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
+                float timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+                if (timer <= 0f && numberOfFullRooms < Settings.MIN_ROOMS) { // Reset timer, not enough players in game
+                    Network.instance.gameHandler.RestartStartTimer(gameIndex);
+                    timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+                }
+                int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) && (timer <= 0f))) ? 1 : 0;
+                buffer.Clear();
+                buffer.WriteInt(15);
+                buffer.WriteInt(gameReady);
+                buffer.WriteFloat(timer);
+                Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
             }
-            int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= 2) && (timer <= 0f))) ? 1 : 0;
-            buffer.WriteInt(15);
-            buffer.WriteInt(gameReady);
-            buffer.WriteInt(numberOfFullRooms);
-            buffer.WriteFloat(timer);
-            Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
         }
 
         
@@ -582,6 +587,30 @@ namespace ServerApplication {
                 Console.WriteLine(e.ToString());
             }
             return;
+        }
+        List<int> waiting = new List<int>();
+        void HandleWaitForAllPlayersReceiveGameReady(int index, byte[] data) {
+            try {
+                ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+                buffer.WriteBytes(data);
+                buffer.ReadInt();
+                int gameIndex = buffer.ReadInt();
+                bool ready = Network.instance.gameHandler.PlayerReady(gameIndex, NumberOfConnectedClients);
+                if (ready) {
+                    buffer.Clear();
+                    buffer.WriteInt(19);
+                    foreach (int clientIndex in waiting) {
+                        Console.WriteLine(clientIndex);
+                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    }
+                    Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                }
+                else {
+                    waiting.Add(index);
+                }
+            } catch (Exception e) {
+                Console.WriteLine(e.ToString());
+            }
         }
         #endregion
 

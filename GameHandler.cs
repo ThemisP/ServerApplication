@@ -143,6 +143,14 @@ namespace ServerApplication {
                 _games[gameIndex] = new Game(gameIndex);
             }
         }
+
+        public bool PlayerReady(int gameIndex, int connectedClients) {
+            if (_games[gameIndex] != null) {
+                return _games[gameIndex].PlayerReady(connectedClients);
+            }
+
+            return false;
+        }
     }
 
     class Game {
@@ -153,7 +161,7 @@ namespace ServerApplication {
         private int activeTeams = 0;
         Timer startTimer = new Timer();
         public float timeElapsed = 0f;
-
+        private int playersReady = 0;
         private GameState _state;
         private enum GameState {
             Searching,
@@ -326,6 +334,11 @@ namespace ServerApplication {
             }
 
             RestartTimer();
+        }
+
+        public bool PlayerReady(int connectedClients) {
+            this.playersReady += 1;
+            return playersReady == connectedClients;
         }
     }
 }

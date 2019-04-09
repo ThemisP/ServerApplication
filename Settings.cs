@@ -10,6 +10,7 @@ namespace ServerApplication {
         public const int SEND_BUFFER_SIZE = 4096;
         public const int RECEIVE_BUFFER_SIZE = 4096;
         public const int MAX_ROOMS = 2;
+        public const int MIN_ROOMS = 1;
         public const float MAX_START_TIMER = 300f;
     }
 }
