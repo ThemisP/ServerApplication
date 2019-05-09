@@ -115,14 +115,22 @@ namespace ServerApplication {
             return;
         }
 
-        public int HandlePlayerDeath(int teamIndex, int gameIndex, int clientIndex) {
-            int ret = 0;
+        public bool HandlePlayerDeath(int teamIndex, int gameIndex, int clientIndex) {
+            bool ret = false;
             if (_games[gameIndex] != null) {
-                ret = (_games[gameIndex].RegisterPlayerDeath(teamIndex, clientIndex) > 1) ? 0 : 1;
+                ret = (_games[gameIndex].RegisterPlayerDeath(teamIndex, clientIndex));
             }
 
             return ret;
-        }   
+        } 
+        
+        public bool HandleGameEnd(int gameIndex) {
+            bool ret = false;
+            if(_games[gameIndex] != null) {
+                ret = (_games[gameIndex].isGameEnd());
+            }
+            return ret;
+        }
 
         public void NewGame(int gameIndex) {
             if (_games[gameIndex] != null) {
@@ -136,6 +144,13 @@ namespace ServerApplication {
             }
 
             return null;
+        }
+
+        public int GetTeammateId(int gameIndex, int index, int teamIndex) {
+            if(_games[gameIndex] != null) {
+                return _games[gameIndex].GetTeammateClientIndex(index, teamIndex);
+            }
+            return -1;
         }
 
         public void RestartGame(int gameIndex) {
@@ -291,6 +306,10 @@ namespace ServerApplication {
             return players.ToArray();
         }
 
+        public int GetTeammateClientIndex(int index, int teamIndex) {
+            return Teams[teamIndex].GetTeammate(index);
+        }
+
         public void LeaveGame(int clientIndex) {            
             for(int i=0; i<Settings.MAX_PLAYERS; i++) {
                 if (connectedClients[i] == clientIndex){
@@ -325,13 +344,16 @@ namespace ServerApplication {
             this.StartTimer();
         }
 
-        public int RegisterPlayerDeath(int teamIndex, int clientIndex) {
+        //returns true if both members of the team died.
+        public bool RegisterPlayerDeath(int teamIndex, int clientIndex) {
             Teams[teamIndex].SetAliveStatus(clientIndex, false);
 
-            if (!Teams[teamIndex].isTeamAlive())
+            if (!Teams[teamIndex].isTeamAlive()) {
                 this.activeTeams -= 1;
+                return false;
+            }
 
-            return this.activeTeams;
+            return true;
         }
 
         public void NewGame() {
@@ -346,6 +368,10 @@ namespace ServerApplication {
         public bool PlayerReady(int connectedClients) {
             this.playersReady += 1;
             return playersReady == connectedClients;
+        }
+
+        public bool isGameEnd() {
+            return !(this.activeTeams > 1);
         }
     }
 }

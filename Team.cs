@@ -22,13 +22,22 @@ namespace ServerApplication {
         public void createTeam(int ClientOneIndex, int ClientTwoIndex) {
             player1 = Network.Clients[ClientOneIndex].player;
             player1.SetTeamNumber(this.index);
+            player1.SetTeammember(ClientTwoIndex);
             player2 = Network.Clients[ClientTwoIndex].player;
             player2.SetTeamNumber(this.index);
+            player2.SetTeammember(ClientOneIndex);
             empty = false;
         }
 
         public int getIndex() {
             return this.index;
+        }
+        public int GetTeammate(int index) {
+            if(player1.GetId() == index) {
+                return player2.GetId();
+            } else {
+                return player1.GetId();
+            }
         }
         public int getGameIndex() {
             return this.gameIndex;
