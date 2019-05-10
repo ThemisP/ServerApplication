@@ -699,6 +699,18 @@ namespace ServerApplication {
         }
         #endregion
 
+        #region "Server send data"
+        public static void SendCircleShrinkData(int gameIndex, float circleTimer) {
+            int[] playersInRoom = Network.instance.gameHandler.GetAllPlayers(gameIndex);
+            ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+            buffer.WriteInt(20);
+            buffer.WriteFloat(circleTimer);
+            foreach (int clientIndex in playersInRoom) {
+                Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+            }
+        }
+        #endregion
+
         void AfterGameCleanUp(int gameIndex) {
             // CleanUp room
             try {            

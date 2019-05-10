@@ -12,5 +12,6 @@ namespace ServerApplication {
         public const int MAX_ROOMS = 2;
         public const int MIN_ROOMS = 1;
         public const float MAX_START_TIMER = 300f;
+        public const float MAX_GAME_TIMER = 600f;
     }
 }

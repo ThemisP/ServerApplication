@@ -155,6 +155,7 @@ namespace ServerApplication {
 
         public void RestartGame(int gameIndex) {
             if (_games[gameIndex] != null) {
+                _games[gameIndex].StopCircleTimer();
                 _games[gameIndex] = new Game(gameIndex);
             }
         }
@@ -175,6 +176,8 @@ namespace ServerApplication {
         private Team[] Teams = new Team[Settings.MAX_PLAYERS/2];
         private int activeTeams = 0;
         Timer startTimer = new Timer();
+        Timer circleTimer = new Timer();
+        public float circleTimeElapsed = 0f;
         public float timeElapsed = 0f;
         private int playersReady = 0;
         private GameState _state;
@@ -238,6 +241,7 @@ namespace ServerApplication {
             int indexOne = 0;
             int indexTwo = 0;
             NumberOfConnectedClients += 2;
+            StartCircleTimer();
             while (found<2 && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     if (found == 0) indexOne = count;
@@ -323,8 +327,30 @@ namespace ServerApplication {
             }
         }
 
+        public void StartCircleTimer() {
+            this.circleTimeElapsed = 0f;
+            this.circleTimer.Elapsed += new ElapsedEventHandler(IncrementCircleTimer);
+            circleTimer.Interval = 2000;
+            circleTimer.Enabled = true;
+        }
+
+        private void IncrementCircleTimer(object source, ElapsedEventArgs e) {
+            this.circleTimeElapsed += 2f;
+            if (circleTimeElapsed >= Settings.MAX_GAME_TIMER) {
+                this.circleTimer.Stop();
+                circleTimeElapsed = Settings.MAX_GAME_TIMER;
+            }
+            ServerHandlePackets.SendCircleShrinkData(this.GameIndex ,circleTimeElapsed);
+        }
+
+        public void StopCircleTimer() {
+            this.timeElapsed = 0f;
+            this.circleTimer.Stop();
+        }
+
 
         public void StartTimer() {
+            this.timeElapsed = 0f;
             this.startTimer.Elapsed += new ElapsedEventHandler(IncrementTimer);
             startTimer.Interval = 5000;
             startTimer.Enabled = true;
