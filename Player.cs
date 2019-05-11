@@ -114,6 +114,10 @@ namespace ServerApplication {
         {
             this.isAlive = isAlive;
         }
+
+        public void SetHealth(float health) {
+            this.health = health;
+        }
         #endregion
 
         #region "Getters"
