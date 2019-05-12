@@ -155,9 +155,9 @@ namespace ServerApplication {
 
         public void RestartGame(int gameIndex) {
             if (_games[gameIndex] != null) {
-                _games[gameIndex].StopCircleTimer();
-                _games[gameIndex] = new Game(gameIndex);
+                _games[gameIndex].StopCircleTimer();                
             }
+            _games[gameIndex] = new Game(gameIndex);
         }
 
         public bool PlayerReady(int gameIndex, int connectedClients) {
@@ -393,7 +393,7 @@ namespace ServerApplication {
 
         public bool PlayerReady(int connectedClients) {
             this.playersReady += 1;
-            return playersReady == connectedClients;
+            return playersReady > Settings.MIN_ROOMS*2;
         }
 
         public bool isGameEnd() {

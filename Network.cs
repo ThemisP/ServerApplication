@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 
 namespace ServerApplication {
     class Network {
@@ -13,6 +14,7 @@ namespace ServerApplication {
         public UdpClient UdpClient;
         public RoomHandler roomHandler;
         public GameHandler gameHandler;
+        private Timer checkConnectionTimer = new Timer();
 
 
         public void ServerStart() {
@@ -31,7 +33,25 @@ namespace ServerApplication {
             UdpClient = new UdpClient(5501);
             UdpClient.BeginReceive(new AsyncCallback(OnReceiveUdpData), null);
             Console.WriteLine("Server has successfully started.");
+            //StartConnectionTimer();
         }
+        //public void StartConnectionTimer() {
+        //    checkConnectionTimer.Elapsed += new ElapsedEventHandler(SendCheckConnection);
+        //    checkConnectionTimer.Interval = 2000;
+        //    checkConnectionTimer.Enabled = true;
+        //}
+
+        //private void SendCheckConnection(object source, ElapsedEventArgs arg) {
+        //    ByteBuffer.ByteBuffer buffer = new ByteBuffer.ByteBuffer();
+        //    buffer.WriteInt(23);
+        //    Console.WriteLine("in");
+        //    foreach(Client client in Clients) {
+        //        if(client.TcpClient != null) {
+        //            client.TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+        //            client.TcpStream.Read()
+        //        }
+        //    }
+        //}
 
         void OnClientConnect(IAsyncResult result) {
             TcpClient client = ServerSocket.EndAcceptTcpClient(result);

@@ -57,7 +57,9 @@ namespace ServerApplication {
 
         public void LeaveRoom(int roomIndex, int clientIndex) {
             if(_rooms[roomIndex] != null) {
-                _rooms[roomIndex].LeaveRoom(clientIndex);
+                if (_rooms[roomIndex].LeaveRoom(clientIndex)) {
+                    _rooms[roomIndex] = null;
+                }
             } else {
                 Console.WriteLine("Room index :" + roomIndex + "does not exist");
             }
@@ -164,16 +166,21 @@ namespace ServerApplication {
         }
 
         //TODO: WIP
-        public void LeaveRoom(int playerIndex) {
-            if (_state == RoomState.Empty) return;
+        public bool LeaveRoom(int playerIndex) {
+            if (_state == RoomState.Empty) return true;
+            bool destroy = false;
             for(int i=0; i<maxPlayers; i++) {
                 if(players[i] == playerIndex) {
                     players[i] = -1;
                     Network.Clients[playerIndex].player.LeaveRoom();
                     if (_state == RoomState.Full) _state = RoomState.Searching;
-                    else _state = RoomState.Empty;
+                    else {
+                        _state = RoomState.Empty;
+                        destroy = true;
+                    }
                 }
             }
+            return destroy;
         }
 
         public RoomState GetRoomState() {
