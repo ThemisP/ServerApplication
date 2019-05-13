@@ -609,6 +609,16 @@ namespace ServerApplication {
                 buffer.WriteInt(gameReady);
                 buffer.WriteFloat(timer);
                 Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+
+                if (gameReady == 1) {
+                    buffer.Clear();
+                    buffer.WriteInt(19);
+                    foreach (int clientIndex in waiting) {
+                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    }
+                    Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    waiting = new List<int>();
+                }
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
             }
@@ -720,18 +730,21 @@ namespace ServerApplication {
                 int gameIndex = buffer.ReadInt();
                 bool ready = Network.instance.gameHandler.PlayerReady(gameIndex, NumberOfConnectedClients);
                 Console.WriteLine("ready? : " + ready);
-                if (ready) {
-                    buffer.Clear();
-                    buffer.WriteInt(19);
-                    foreach (int clientIndex in waiting) {
-                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-                    }
-                    Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-                    waiting = new List<int>();
-                }
-                else {
+                if (!waiting.Contains(index)) {
                     waiting.Add(index);
                 }
+                //if (ready) {
+                //    buffer.Clear();
+                //    buffer.WriteInt(19);
+                //    foreach (int clientIndex in waiting) {
+                //        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                //    }
+                //    Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                //    waiting = new List<int>();
+                //}
+                //else {
+                //    waiting.Add(index);
+                //}
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
             }

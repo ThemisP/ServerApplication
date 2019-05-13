@@ -409,7 +409,7 @@ namespace ServerApplication {
         }
 
         public void GameReady() {
-            this.timeElapsed = Settings.MAX_GAME_TIMER - 5;
+            this.timeElapsed = Settings.MAX_GAME_TIMER - 15;
             return;
         }
     }
