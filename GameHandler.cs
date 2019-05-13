@@ -167,6 +167,14 @@ namespace ServerApplication {
 
             return false;
         }
+
+        public void SetTimerToStart(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].GameReady();
+            }
+
+            return;
+        }
     }
 
     class Game {
@@ -398,6 +406,11 @@ namespace ServerApplication {
 
         public bool isGameEnd() {
             return !(this.activeTeams > 1);
+        }
+
+        public void GameReady() {
+            this.timeElapsed = Settings.MAX_GAME_TIMER - 5;
+            return;
         }
     }
 }

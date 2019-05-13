@@ -602,7 +602,7 @@ namespace ServerApplication {
                     Network.instance.gameHandler.RestartStartTimer(gameIndex);
                     timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
                 }
-                int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) && (timer <= 0f))) ? 1 : 0;
+                int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) || (timer <= 0f))) ? 1 : 0;
                 Console.WriteLine("gameReady? :" + gameReady);
                 buffer.Clear();
                 buffer.WriteInt(15);
