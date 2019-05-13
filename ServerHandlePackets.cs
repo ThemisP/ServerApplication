@@ -598,10 +598,10 @@ namespace ServerApplication {
                 buffer.Clear();
                 int numberOfFullRooms = Network.instance.roomHandler.GetNumberOfFullRooms();
                 float timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
-                if (timer <= 0f && numberOfFullRooms < Settings.MIN_ROOMS) { // Reset timer, not enough players in game
-                    Network.instance.gameHandler.RestartStartTimer(gameIndex);
-                    timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
-                }
+                // if (timer <= 0f && numberOfFullRooms < Settings.MIN_ROOMS) { // Reset timer, not enough players in game
+                //     Network.instance.gameHandler.RestartStartTimer(gameIndex);
+                //     timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
+                // }
                 int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) || (timer <= 0f))) ? 1 : 0;
                 Console.WriteLine("gameReady? :" + gameReady);
                 buffer.Clear();
