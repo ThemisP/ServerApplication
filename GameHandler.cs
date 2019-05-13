@@ -404,7 +404,7 @@ namespace ServerApplication {
         }
 
         public bool isGameEnd() {
-            return !(this.activeTeams > 1);
+            return !(this.activeTeams >= 1);
         }
 
         public void GameReady() {
