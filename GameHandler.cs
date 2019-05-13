@@ -369,7 +369,6 @@ namespace ServerApplication {
             if (timeElapsed >= Settings.MAX_START_TIMER) {
                 this.startTimer.Stop(); 
                 timeElapsed = Settings.MAX_START_TIMER;
-                _state = GameState.Full;
             }
         }
 
