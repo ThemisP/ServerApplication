@@ -516,7 +516,7 @@ namespace ServerApplication {
                         }
                     }
                     if (gameOver) {
-                        int[] players = Network.instance.gameHandler.GetAllPlayers(gameIndex);
+                        int[] players = Network.instance.gameHandler.GetAlivePlayersInGame(gameIndex);
                         buffer.Clear();
                         buffer.WriteInt(17);
                         buffer.WriteInt(1);
