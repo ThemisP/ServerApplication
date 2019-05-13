@@ -179,7 +179,7 @@ namespace ServerApplication {
 
     class Game {
         private int GameIndex;
-        private List<int> connectedClients = new List<int>();
+        private int[] connectedClients = new int[Settings.MAX_PLAYERS];
         private int NumberOfConnectedClients = 0;
         private Team[] Teams = new Team[Settings.MAX_PLAYERS/2];
         private int activeTeams = 0;
@@ -380,10 +380,8 @@ namespace ServerApplication {
         //returns true if both members of the team died.
         public bool RegisterPlayerDeath(int teamIndex, int clientIndex) {
             Teams[teamIndex].SetAliveStatus(clientIndex, false);
+
             if (!Teams[teamIndex].isTeamAlive()) {
-                connectedClients.Remove(Teams[teamIndex].GetTeammate(clientIndex));
-                connectedClients.Remove(clientIndex);
-                this.NumberOfConnectedClients -= 2;
                 this.activeTeams -= 1;
                 return false;
             }
