@@ -401,7 +401,7 @@ namespace ServerApplication {
 
         public bool PlayerReady(int connectedClients) {
             this.playersReady += 1;
-            return playersReady > Settings.MIN_ROOMS*2;
+            return playersReady == connectedClients;
         }
 
         public bool isGameEnd() {
