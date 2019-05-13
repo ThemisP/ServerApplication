@@ -502,7 +502,19 @@ namespace ServerApplication {
                         Console.WriteLine("teammate: " + teammateIndex);
                         Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                         Network.Clients[teammateIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
-                    } 
+                    } else {
+                        int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameIndex, index);
+                        buffer.Clear();
+                        buffer.WriteInt(9);
+                        buffer.WriteInt(index);
+                        buffer.WriteInt(player.GetTeamNumber());
+                        buffer.WriteString(bullet_id);
+                        buffer.WriteInt((player.IsAlive()) ? 1 : 0);
+                        buffer.WriteFloat(player.GetHealth());
+                        foreach (int clientIndex in playersInRoom) {
+                            Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                        }
+                    }
                     if (gameOver) {
                         int[] players = Network.instance.gameHandler.GetAllPlayers(gameIndex);
                         buffer.Clear();
@@ -513,17 +525,18 @@ namespace ServerApplication {
                         }
                         AfterGameCleanUp(gameIndex);
                     }
-                } 
-                int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameIndex, index);
-                buffer.Clear();
-                buffer.WriteInt(9);
-                buffer.WriteInt(index);
-                buffer.WriteInt(player.GetTeamNumber());
-                buffer.WriteString(bullet_id);
-                buffer.WriteInt((player.IsAlive()) ? 1 : 0);
-                buffer.WriteFloat(player.GetHealth());
-                foreach (int clientIndex in playersInRoom) {
-                    Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                } else {
+                    int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameIndex, index);
+                    buffer.Clear();
+                    buffer.WriteInt(9);
+                    buffer.WriteInt(index);
+                    buffer.WriteInt(player.GetTeamNumber());
+                    buffer.WriteString(bullet_id);
+                    buffer.WriteInt((player.IsAlive()) ? 1 : 0);
+                    buffer.WriteFloat(player.GetHealth());
+                    foreach (int clientIndex in playersInRoom) {
+                        Network.Clients[clientIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                    }
                 }
                 
             } catch (Exception e) {

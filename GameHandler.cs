@@ -343,7 +343,7 @@ namespace ServerApplication {
         }
 
         private void IncrementCircleTimer(object source, ElapsedEventArgs e) {
-            this.circleTimeElapsed += 2f; 
+            this.circleTimeElapsed += 2f;
             if (circleTimeElapsed >= Settings.MAX_GAME_TIMER) {
                 this.circleTimer.Stop();
                 circleTimeElapsed = Settings.MAX_GAME_TIMER;
