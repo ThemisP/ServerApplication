@@ -175,6 +175,20 @@ namespace ServerApplication {
 
             return;
         }
+
+        public int GetManualStart(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                return _games[gameIndex].isGameManuallyStarted();
+            }
+
+            return 0;
+        }
+
+        public void ManualStart(int gameIndex) {
+            if (_games[gameIndex] != null) {
+                _games[gameIndex].ManualStart();
+            }
+        }
     }
 
     class Game {
@@ -189,6 +203,7 @@ namespace ServerApplication {
         public float timeElapsed = 0f;
         private int playersReady = 0;
         private GameState _state;
+        private bool manualStart = false;
 
         private List<int> playersStillAlive = new List<int>();
         private enum GameState {
@@ -360,7 +375,7 @@ namespace ServerApplication {
         }
 
         public void StopCircleTimer() {
-            this.timeElapsed = 0f;
+            this.circleTimeElapsed = 0f;
             this.circleTimer.Stop();
         }
 
@@ -425,6 +440,15 @@ namespace ServerApplication {
         public void GameReady() {
             this.timeElapsed = Settings.MAX_GAME_TIMER - 15;
             return;
+        }
+
+        public void ManualStart() {
+            this.manualStart = true;
+        }
+
+        public int isGameManuallyStarted() {
+            if (manualStart) return 1;
+            return 0;
         }
     }
 }

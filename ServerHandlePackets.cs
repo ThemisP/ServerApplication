@@ -610,7 +610,8 @@ namespace ServerApplication {
                 //     Network.instance.gameHandler.RestartStartTimer(gameIndex);
                 //     timer = Network.instance.gameHandler.GetStartTimer(gameIndex);
                 // }
-                int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) || (timer <= 0f))) ? 1 : 0;
+                //int gameReady = (numberOfFullRooms == Settings.MAX_ROOMS || ( (numberOfFullRooms >= Settings.MIN_ROOMS) || (timer <= 0f))) ? 1 : 0;
+                int gameReady = Network.instance.gameHandler.GetManualStart(gameIndex);
                 Console.WriteLine("gameReady? :" + gameReady);
                 buffer.Clear();
                 buffer.WriteInt(15);
@@ -626,6 +627,10 @@ namespace ServerApplication {
                     }
                     Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                     waiting = new List<int>();
+                    return;
+                }
+                if (timer <= 0f) { // Reset timer, not enough players in game
+                    Network.instance.gameHandler.RestartStartTimer(gameIndex);
                 }
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -818,6 +823,7 @@ namespace ServerApplication {
                 Network.instance.roomHandler.EmptyRooms();
                 Network.instance.gameHandler.RestartGame(gameIndex);
                 Network.instance.gameHandler.RestartStartTimer(gameIndex);
+                Network.instance.CleanPlayers();
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
             }

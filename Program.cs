@@ -30,7 +30,7 @@ namespace ServerApplication {
                 } else if (line.ToLower() == "creategame") {
                     Network.instance.gameHandler.CreateGame();
                 } else if (line.ToLower() == "ready") {
-                    Network.instance.gameHandler.SetTimerToStart(0);
+                    Network.instance.gameHandler.ManualStart(0);
                 } else {
 
                 }

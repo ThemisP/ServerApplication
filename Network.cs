@@ -99,6 +99,13 @@ namespace ServerApplication {
             }
         }
 
+        public void CleanPlayers() {
+            foreach(Client client in Clients) {
+                int id = client.Index;
+                client.player = new Player("username", id);
+            }
+        }
+
         static void BroadCastResponse(IAsyncResult ar)
         {
 
