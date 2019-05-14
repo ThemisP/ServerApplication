@@ -502,6 +502,8 @@ namespace ServerApplication {
                         Console.WriteLine("teammate: " + teammateIndex);
                         Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                         Network.Clients[teammateIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                        Network.Clients[index].player = new Player("username", index);
+                        Network.Clients[teammateIndex].player = new Player("username", teammateIndex);
                         int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameIndex, index);
                         buffer.Clear();
                         buffer.WriteInt(24);
