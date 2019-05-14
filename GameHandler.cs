@@ -414,12 +414,12 @@ namespace ServerApplication {
         }
 
         public bool isGameEnd() {
-            bool condition1 = false;
-            if (playersStillAlive.Capacity == 2) 
-                condition1 = true;
+            int condition1 = 0;
+            foreach (int index in playersStillAlive)
+                condition1++;
 
         
-            return condition1;
+            return condition1<=2;
         }
 
         public void GameReady() {
