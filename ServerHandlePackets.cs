@@ -502,6 +502,14 @@ namespace ServerApplication {
                         Console.WriteLine("teammate: " + teammateIndex);
                         Network.Clients[index].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
                         Network.Clients[teammateIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                        int[] playersInRoom = Network.instance.gameHandler.GetAlivePlayersInGame(gameIndex, index);
+                        buffer.Clear();
+                        buffer.WriteInt(24);
+                        buffer.WriteInt(index);
+                        buffer.WriteInt(teammateIndex);
+                        foreach(int otherIndex in playersInRoom) {
+                            Network.Clients[otherIndex].TcpStream.Write(buffer.BuffToArray(), 0, buffer.Length());
+                        }
                     } else {
                         int[] playersInRoom = Network.instance.gameHandler.GetPlayersInGame(gameIndex, index);
                         buffer.Clear();

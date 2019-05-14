@@ -189,6 +189,8 @@ namespace ServerApplication {
         public float timeElapsed = 0f;
         private int playersReady = 0;
         private GameState _state;
+
+        private List<int> playersStillAlive = new List<int>();
         private enum GameState {
             Searching,
             Empty,
@@ -263,6 +265,8 @@ namespace ServerApplication {
                 connectedClients[indexOne] = ClientOneIndex;
                 connectedClients[indexTwo] = ClientTwoIndex;
                 int teamIndex = AddTeam(ClientOneIndex, ClientTwoIndex);
+                playersStillAlive.Add(ClientOneIndex);
+                playersStillAlive.Add(ClientTwoIndex);
                 // NumberOfConnectedClients += 2;
                 if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
@@ -295,14 +299,18 @@ namespace ServerApplication {
             return players.ToArray();
         }
 
-        public int[] GetAlivePlayersBut(int index) {
+        public int[] GetAlivePlayersBut(int clientIndex) {
             List<int> players = new List<int>();
             
-            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
-                if (connectedClients[i] != -1 && connectedClients[i] != index) {
-                    if(Network.Clients[connectedClients[i]].player.IsAlive())
-                        players.Add(connectedClients[i]);
-                }
+            //for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+            //    if (connectedClients[i] != -1 && connectedClients[i] != index) {
+            //        if(Network.Clients[connectedClients[i]].player.IsAlive())
+            //            players.Add(connectedClients[i]);
+            //    }
+            //}
+            foreach(int index in playersStillAlive) {
+                if (index != clientIndex)
+                    players.Add(index);
             }
             return players.ToArray();
         }
@@ -382,6 +390,8 @@ namespace ServerApplication {
             Teams[teamIndex].SetAliveStatus(clientIndex, false);
 
             if (!Teams[teamIndex].isTeamAlive()) {
+                playersStillAlive.Remove(clientIndex);
+                playersStillAlive.Remove(Teams[teamIndex].GetTeammate(clientIndex));
                 this.activeTeams -= 1;
                 return false;
             }
