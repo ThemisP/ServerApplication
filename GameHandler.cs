@@ -415,11 +415,7 @@ namespace ServerApplication {
 
         public bool isGameEnd() {
             bool condition1 = false;
-            if (playersStillAlive.Capacity == 2) {
-                if (Network.Clients[playersStillAlive[0]].player.GetTeamNumber() == Network.Clients[playersStillAlive[1]].player.GetTeamNumber())
-                    condition1 = true;
-
-            } else if (playersStillAlive.Capacity == 1)
+            if (playersStillAlive.Capacity == 2) 
                 condition1 = true;
 
         
