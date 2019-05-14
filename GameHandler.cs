@@ -181,7 +181,7 @@ namespace ServerApplication {
         private int GameIndex;
         private int[] connectedClients = new int[Settings.MAX_PLAYERS];
         private int NumberOfConnectedClients = 0;
-        private Team[] Teams = new Team[Settings.MAX_PLAYERS/2];
+        private Team[] Teams = new Team[Settings.MAX_PLAYERS / 2];
         private int activeTeams = 0;
         Timer startTimer = new Timer();
         Timer circleTimer = new Timer();
@@ -199,9 +199,9 @@ namespace ServerApplication {
 
         public Game(int gameIndex) {
             this.GameIndex = gameIndex;
-            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
-                if (i < Settings.MAX_PLAYERS/2) {
+                if (i < Settings.MAX_PLAYERS / 2) {
                     Teams[i] = new Team(i, GameIndex);
                 }
             }
@@ -212,7 +212,7 @@ namespace ServerApplication {
             this.GameIndex = gameIndex;
             for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
                 connectedClients[i] = -1;
-                if (i < Settings.MAX_PLAYERS/2) {
+                if (i < Settings.MAX_PLAYERS / 2) {
                     Teams[i] = new Team(i, GameIndex);
                 }
             }
@@ -224,7 +224,7 @@ namespace ServerApplication {
             if (_state == GameState.Full) return false;
             int count = 0;
             bool found = false;
-            while(!found && count < Settings.MAX_PLAYERS) {
+            while (!found && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     connectedClients[count] = ClientIndex;
                     found = true;
@@ -234,14 +234,14 @@ namespace ServerApplication {
 
             if (found) {
                 NumberOfConnectedClients += 1;
-                if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
+                if (NumberOfConnectedClients == Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
                 }
                 return true;
             } else
-                return false;            
+                return false;
         }
 
         public int AddDuo(int ClientOneIndex, int ClientTwoIndex) {
@@ -252,7 +252,7 @@ namespace ServerApplication {
             int indexTwo = 0;
             NumberOfConnectedClients += 2;
             StartCircleTimer();
-            while (found<2 && count < Settings.MAX_PLAYERS) {
+            while (found < 2 && count < Settings.MAX_PLAYERS) {
                 if (connectedClients[count] == -1) {
                     if (found == 0) indexOne = count;
                     else indexTwo = count;
@@ -261,14 +261,14 @@ namespace ServerApplication {
                 count++;
             }
 
-            if (found>1) {
+            if (found > 1) {
                 connectedClients[indexOne] = ClientOneIndex;
                 connectedClients[indexTwo] = ClientTwoIndex;
                 int teamIndex = AddTeam(ClientOneIndex, ClientTwoIndex);
                 playersStillAlive.Add(ClientOneIndex);
                 playersStillAlive.Add(ClientTwoIndex);
                 // NumberOfConnectedClients += 2;
-                if (NumberOfConnectedClients==Settings.MAX_PLAYERS) {
+                if (NumberOfConnectedClients == Settings.MAX_PLAYERS) {
                     _state = GameState.Full;
                 } else {
                     _state = GameState.Searching;
@@ -281,7 +281,7 @@ namespace ServerApplication {
         int AddTeam(int ClientOneIndex, int ClientTwoIndex) {
             foreach (Team team in Teams) {
                 if (team.isEmpty()) {
-                    team.createTeam(ClientOneIndex,ClientTwoIndex);
+                    team.createTeam(ClientOneIndex, ClientTwoIndex);
                     activeTeams += 1;
                     return team.getIndex();
                 }
@@ -291,8 +291,8 @@ namespace ServerApplication {
 
         public int[] GetConnectedPlayers() {
             List<int> players = new List<int>();
-            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
-                if(connectedClients[i] != -1) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                if (connectedClients[i] != -1) {
                     players.Add(connectedClients[i]);
                 }
             }
@@ -301,14 +301,14 @@ namespace ServerApplication {
 
         public int[] GetAlivePlayersBut(int clientIndex) {
             List<int> players = new List<int>();
-            
+
             //for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
             //    if (connectedClients[i] != -1 && connectedClients[i] != index) {
             //        if(Network.Clients[connectedClients[i]].player.IsAlive())
             //            players.Add(connectedClients[i]);
             //    }
             //}
-            foreach(int index in playersStillAlive) {
+            foreach (int index in playersStillAlive) {
                 if (index != clientIndex)
                     players.Add(index);
             }
@@ -330,9 +330,9 @@ namespace ServerApplication {
             return Teams[teamIndex].GetTeammate(index);
         }
 
-        public void LeaveGame(int clientIndex) {            
-            for(int i=0; i<Settings.MAX_PLAYERS; i++) {
-                if (connectedClients[i] == clientIndex){
+        public void LeaveGame(int clientIndex) {
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                if (connectedClients[i] == clientIndex) {
                     connectedClients[i] = -1;
                     NumberOfConnectedClients -= 1;
                 }
@@ -356,7 +356,7 @@ namespace ServerApplication {
                 this.circleTimer.Stop();
                 circleTimeElapsed = Settings.MAX_GAME_TIMER;
             }
-            ServerHandlePackets.SendCircleShrinkData(this.GameIndex ,circleTimeElapsed);
+            ServerHandlePackets.SendCircleShrinkData(this.GameIndex, circleTimeElapsed);
         }
 
         public void StopCircleTimer() {
@@ -372,10 +372,10 @@ namespace ServerApplication {
             startTimer.Enabled = true;
         }
 
-        private void IncrementTimer(object source, ElapsedEventArgs e){
+        private void IncrementTimer(object source, ElapsedEventArgs e) {
             this.timeElapsed += 5f;
             if (timeElapsed >= Settings.MAX_START_TIMER) {
-                this.startTimer.Stop(); 
+                this.startTimer.Stop();
                 timeElapsed = Settings.MAX_START_TIMER;
             }
         }
@@ -400,7 +400,7 @@ namespace ServerApplication {
         }
 
         public void NewGame() {
-            foreach(Team t in Teams) {
+            foreach (Team t in Teams) {
                 if (t != null)
                     t.ResetPlayers();
             }
@@ -414,7 +414,16 @@ namespace ServerApplication {
         }
 
         public bool isGameEnd() {
-            return !(this.activeTeams >= 1);
+            bool condition1 = false;
+            if (playersStillAlive.Capacity == 2) {
+                if (Network.Clients[playersStillAlive[0]].player.GetTeamNumber() == Network.Clients[playersStillAlive[1]].player.GetTeamNumber())
+                    condition1 = true;
+
+            } else if (playersStillAlive.Capacity == 1)
+                condition1 = true;
+
+        
+            return condition1;
         }
 
         public void GameReady() {
